@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Скупка золота и драгоценных металлов · от обращения клиента до передачи на склад",
+    "subtitle": "Карта для обсуждения: основной путь, завершения и переходы в связанные процессы",
+    "animation": "none",
+    "quality_profile": "showcase",
+    "viewBox": [1200, 560],
+    "legend": {
+      "mode": "hidden"
+    },
+    "views": [
+      {
+        "id": "main_flow",
+        "label": "Основной путь",
+        "focus": ["request", "inspect", "price", "agreement", "deal", "storage", "warehouse"],
+        "note": "Короткий маршрут от обращения клиента до передачи изделия в самостоятельный складской процесс."
+      },
+      {
+        "id": "linked_processes",
+        "label": "Связанные процессы",
+        "focus": ["price", "approval", "agreement", "inspect", "alternate", "deal", "correction", "storage", "warehouse"],
+        "note": "Согласование с возвратом, отдельное исправление и передача в следующий процесс показаны раздельно."
+      },
+      {
+        "id": "stops_and_controls",
+        "label": "Контроль и исходы",
+        "focus": ["inspect", "agreement", "stop", "deal"],
+        "note": "Отказ до оформления завершает эту сделку; ошибка после проведения запускает отдельный процесс исправления."
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "control", "label": "Согласование повышенной оценки" },
+    { "id": "main", "label": "Основной путь сделки" },
+    { "id": "linked", "label": "Связанные процессы и завершение", "variant": "exception" }
+  ],
+  "phases": [
+    { "id": "appeal", "label": "Запрос клиента", "fromCol": 0, "toCol": 0 },
+    { "id": "check", "label": "Проверка и оценка", "fromCol": 1, "toCol": 2 },
+    { "id": "decision", "label": "Решение клиента", "fromCol": 3, "toCol": 3, "variant": "emphasis" },
+    { "id": "paperwork", "label": "Оформление и передача", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "mainPath": ["request", "inspect", "price", "agreement", "deal", "storage", "warehouse"],
+  "nodes": [
+    {
+      "id": "request",
+      "lane": "main",
+      "col": 0,
+      "type": "frontend",
+      "label": "Уточнить запрос",
+      "sublabel": "продажа золота",
+      "width": 130,
+      "height": 64
+    },
+    {
+      "id": "inspect",
+      "lane": "main",
+      "col": 1,
+      "type": "backend",
+      "label": "Проверить изделие",
+      "sublabel": "металл · проба · вес",
+      "width": 140,
+      "height": 64
+    },
+    {
+      "id": "price",
+      "lane": "main",
+      "col": 2,
+      "type": "backend",
+      "label": "Рассчитать цену",
+      "sublabel": "по тарифу системы",
+      "width": 140,
+      "height": 64
+    },
+    {
+      "id": "agreement",
+      "lane": "main",
+      "col": 3,
+      "type": "security",
+      "label": "Подтвердить",
+      "sublabel": "клиента и условия",
+      "width": 130,
+      "height": 64
+    },
+    {
+      "id": "deal",
+      "lane": "main",
+      "col": 4,
+      "type": "database",
+      "label": "Оформить сделку",
+      "sublabel": "документы · выплата",
+      "width": 140,
+      "height": 64
+    },
+    {
+      "id": "storage",
+      "lane": "main",
+      "col": 5,
+      "type": "cloud",
+      "label": "Подготовить передачу",
+      "sublabel": "защищённое хранение",
+      "width": 150,
+      "height": 64
+    },
+    {
+      "id": "approval",
+      "lane": "control",
+      "col": 3,
+      "type": "external",
+      "label": "Согласовать оценку",
+      "sublabel": "решение вернётся сюда",
+      "width": 160,
+      "height": 64
+    },
+    {
+      "id": "alternate",
+      "lane": "linked",
+      "col": 1,
+      "type": "external",
+      "label": "Выбрать другой процесс",
+      "sublabel": "по виду обращения",
+      "width": 160,
+      "height": 64
+    },
+    {
+      "id": "stop",
+      "lane": "linked",
+      "col": 3,
+      "type": "security",
+      "label": "Завершить без сделки",
+      "sublabel": "отказ или запрет",
+      "width": 150,
+      "height": 64
+    },
+    {
+      "id": "correction",
+      "lane": "linked",
+      "col": 4,
+      "type": "backend",
+      "label": "Исправить операцию",
+      "sublabel": "отдельный процесс",
+      "width": 150,
+      "height": 64
+    },
+    {
+      "id": "warehouse",
+      "lane": "linked",
+      "col": 5,
+      "type": "external",
+      "label": "Передать на склад",
+      "sublabel": "следующий процесс",
+      "width": 160,
+      "height": 64
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_request_inspect",
+      "from": "request",
+      "to": "inspect",
+      "label": "Передать на проверку",
+      "role": "main",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight",
+      "labelAt": [218, 287]
+    },
+    {
+      "id": "e_inspect_price",
+      "from": "inspect",
+      "to": "price",
+      "label": "Изделие подходит",
+      "role": "main",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight",
+      "labelAt": [409, 287]
+    },
+    {
+      "id": "e_price_agreement",
+      "from": "price",
+      "to": "agreement",
+      "label": "Цена рассчитана",
+      "role": "main",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight",
+      "labelAt": [600, 287]
+    },
+    {
+      "id": "e_agreement_deal",
+      "from": "agreement",
+      "to": "deal",
+      "label": "Клиент согласен",
+      "role": "main",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight",
+      "labelAt": [792, 287]
+    },
+    {
+      "id": "e_deal_storage",
+      "from": "deal",
+      "to": "storage",
+      "label": "Сделка оформлена",
+      "role": "main",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight",
+      "labelAt": [983, 287]
+    },
+    {
+      "id": "e_storage_warehouse",
+      "from": "storage",
+      "to": "warehouse",
+      "label": "Передать изделие и данные",
+      "role": "main",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight",
+      "labelAt": [1078, 305]
+    },
+    {
+      "id": "e_price_approval",
+      "from": "price",
+      "to": "approval",
+      "label": "Нужно согласование",
+      "role": "branch",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "route": "up-channel",
+      "labelAt": [600, 165]
+    },
+    {
+      "id": "e_approval_agreement",
+      "from": "approval",
+      "to": "agreement",
+      "label": "Вернуть решение",
+      "role": "return",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight",
+      "labelAt": [760, 181]
+    },
+    {
+      "id": "e_inspect_alternate",
+      "from": "inspect",
+      "to": "alternate",
+      "label": "Выбран другой маршрут",
+      "role": "branch",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight",
+      "labelAt": [313, 305]
+    },
+    {
+      "id": "e_agreement_stop",
+      "from": "agreement",
+      "to": "stop",
+      "label": "Клиент отказался",
+      "role": "error",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight",
+      "labelAt": [696, 305]
+    },
+    {
+      "id": "e_deal_correction",
+      "from": "deal",
+      "to": "correction",
+      "label": "Найдена ошибка",
+      "role": "error",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight",
+      "labelAt": [887, 305]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Как читать карту",
+      "items": [
+        "Бирюзовая линия — основной путь сделки",
+        "Пунктир — согласование, возврат или переход в другой процесс",
+        "Красная ветка — сделка завершена без оформления или передана на исправление"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Переходы между процессами",
+      "items": [
+        "Повышенная оценка: связанный процесс возвращает решение в текущую сделку",
+        "Исправление после проведения: отдельный процесс, текущий путь не продолжается",
+        "Склад: самостоятельный следующий процесс получает изделие и учётные данные"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Что показано на подробной схеме",
+      "items": [
+        "Недопустимое изделие и отказ клиента — разные конечные исходы",
+        "Маркировка и другой вид изделия ведут в разные связанные процессы",
+        "Отказ предъявить документ личности отдельно уведомляет подразделение финансового мониторинга"
+      ]
+    }
+  ]
+}

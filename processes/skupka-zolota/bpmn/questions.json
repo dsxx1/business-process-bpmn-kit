@@ -1,0 +1,87 @@
+{
+  "schema": "business-process-bpmn-questions/v1",
+  "process_id": "GOLD-BUYING",
+  "model_version": "1.1.0",
+  "questions": [
+    {
+      "question_id": "Q-GOLD-BUYING-001",
+      "title": "Кто является уполномоченным владельцем процесса «Скупка золота и драгоценных металлов»?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["Process_GoldBuying"]
+    },
+    {
+      "question_id": "Q-GOLD-BUYING-002",
+      "title": "Подтверждён ли финиш на выплате, статусе «Принято» и защищённом хранении?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["Task_SecureAndPrepareHandoff", "Gateway_FinalConfirmations", "EndEvent_Success"]
+    },
+    {
+      "question_id": "Q-GOLD-BUYING-003",
+      "title": "Каков точный порядок печати, подписи, проведения операции и выплаты?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["Task_VerifyTermsAndDocuments", "Task_SignPostAndConfirmPayment"]
+    },
+    {
+      "question_id": "Q-GOLD-BUYING-004",
+      "title": "Как трактовать отклонения фактического порядка идентификации от действующего внутреннего документа?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["Task_InspectItem", "Task_IdentifyClient"]
+    },
+    {
+      "question_id": "Q-GOLD-BUYING-005",
+      "title": "Каковы пороги, полномочия, канал и срок согласования повышенной оценки?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["CallActivity_HighEvaluation", "Gateway_HighApproved"]
+    },
+    {
+      "question_id": "Q-GOLD-BUYING-006",
+      "title": "Какие способы выплаты доступны и чем подтверждается успешная выплата?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["Task_SignPostAndConfirmPayment", "Gateway_FinalConfirmations"]
+    },
+    {
+      "question_id": "Q-GOLD-BUYING-007",
+      "title": "Как разделяются исправление до проведения, сторно в день операции и поздняя эскалация?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["Gateway_PostedError", "CallActivity_HandlePostedError"]
+    },
+    {
+      "question_id": "Q-GOLD-BUYING-008",
+      "title": "Где проходит граница клиентского процесса относительно государственной системы учёта драгоценных металлов и камней?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["Task_CheckMarkingCode", "EndEvent_MarkingProcessHandoff", "EndEvent_Success"]
+    },
+    {
+      "question_id": "Q-GOLD-BUYING-009",
+      "title": "Какой отдельный процесс службы безопасности получает сообщение о возможной краже после сделки?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["EndEvent_Success"]
+    },
+    {
+      "question_id": "Q-GOLD-BUYING-010",
+      "title": "Какой процесс принимает изделие после защищённого хранения и какие данные ему передаются?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["Task_SecureAndPrepareHandoff", "EndEvent_Success"]
+    }
+  ]
+}

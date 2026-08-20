@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "business-process-bpmn-package/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "process_id",
+    "title",
+    "variant",
+    "version",
+    "status",
+    "canonicality",
+    "bpmn",
+    "engine",
+    "source_card",
+    "evidence",
+    "process_links",
+    "review"
+  ],
+  "properties": {
+    "schema": { "const": "business-process-bpmn-package/v1" },
+    "process_id": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]{2,63}$" },
+    "title": { "type": "string", "minLength": 3 },
+    "variant": { "enum": ["as-is", "to-be", "execution"] },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "status": { "enum": ["draft", "review-ready", "rework", "approved"] },
+    "canonicality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["syntax_status", "profile_status", "business_status"],
+      "properties": {
+        "syntax_status": { "enum": ["pending", "validated", "failed"] },
+        "profile_status": { "enum": ["pending", "validated", "failed"] },
+        "business_status": { "enum": ["pending_human_decision", "canonical", "rejected"] }
+      }
+    },
+    "bpmn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "definitions_id", "process_element_id", "collaboration_id", "standard", "is_executable"],
+      "properties": {
+        "file": { "type": "string", "pattern": "\\.bpmn$" },
+        "definitions_id": { "type": "string", "minLength": 1 },
+        "process_element_id": { "type": "string", "minLength": 1 },
+        "collaboration_id": { "type": "string", "minLength": 1 },
+        "standard": { "const": "BPMN 2.0.2" },
+        "is_executable": { "type": "boolean" }
+      }
+    },
+    "engine": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["vendor", "version", "source_model_ref"],
+          "properties": {
+            "vendor": { "type": "string", "minLength": 2 },
+            "version": { "type": "string", "minLength": 1 },
+            "source_model_ref": { "type": "string", "minLength": 1 },
+            "deployment_target": { "type": ["string", "null"] }
+          }
+        }
+      ]
+    },
+    "source_card": { "$ref": "#/definitions/hashed_ref" },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/evidence_ref" }
+    },
+    "process_links": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/process_link" }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner_role", "human_decision", "questions_file", "decisions_file"],
+      "properties": {
+        "owner_role": { "type": ["string", "null"] },
+        "human_decision": { "enum": ["not_recorded", "approved", "rework", "rejected"] },
+        "questions_file": { "type": "string", "minLength": 1 },
+        "decisions_file": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "variant": { "const": "execution" } } },
+      "then": {
+        "properties": {
+          "bpmn": { "properties": { "is_executable": { "const": true } } },
+          "engine": { "type": "object" }
+        }
+      },
+      "else": {
+        "properties": {
+          "bpmn": { "properties": { "is_executable": { "const": false } } },
+          "engine": { "type": "null" }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "hashed_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256"],
+      "properties": {
+        "ref": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "evidence_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "ref", "sha256", "role"],
+      "properties": {
+        "evidence_id": { "type": "string", "pattern": "^EV-[A-Z0-9-]+-[0-9]{2,3}$" },
+        "ref": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "role": { "type": "string", "minLength": 3 }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_process_id", "title", "target_status", "target_ref"],
+      "properties": {
+        "target_process_id": { "type": ["string", "null"] },
+        "title": { "type": "string", "minLength": 1 },
+        "target_status": { "enum": ["canonical", "candidate", "unresolved"] },
+        "target_ref": { "type": ["string", "null"] }
+      }
+    },
+    "process_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["link_id", "source_element_id", "relation", "label", "target_status", "target_process_id", "target_ref", "candidate_targets"],
+      "properties": {
+        "link_id": { "type": "string", "pattern": "^LINK-[A-Z0-9-]+-[0-9]{2,3}$" },
+        "source_element_id": { "type": "string", "minLength": 1 },
+        "relation": { "enum": ["call", "handoff", "alternate", "exception", "notification"] },
+        "label": { "type": "string", "minLength": 1 },
+        "target_status": { "enum": ["canonical", "candidate", "unresolved"] },
+        "target_process_id": { "type": ["string", "null"] },
+        "target_ref": { "type": ["string", "null"] },
+        "candidate_targets": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/target" }
+        }
+      }
+    }
+  }
+}

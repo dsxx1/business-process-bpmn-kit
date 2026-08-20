@@ -1,0 +1,14 @@
+{
+  "schema": "business-process-bpmn-registry/v1",
+  "processes": [
+    {
+      "process_id": "GOLD-BUYING",
+      "title": "Скупка золота и драгоценных металлов",
+      "status": "review-ready",
+      "business_status": "pending_human_decision",
+      "bpmn_ref": "processes/skupka-zolota/bpmn/process.bpmn",
+      "meta_ref": "processes/skupka-zolota/bpmn/process.meta.json",
+      "navigation_ref": "processes/skupka-zolota/bpmn/derived/process-navigation.html"
+    }
+  ]
+}

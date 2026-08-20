@@ -1,0 +1,6 @@
+{
+  "schema": "business-process-bpmn-decisions/v1",
+  "process_id": "GOLD-BUYING",
+  "model_version": "1.1.0",
+  "decisions": []
+}

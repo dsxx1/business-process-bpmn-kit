@@ -1,0 +1,9 @@
+{
+  "extends": ["bpmnlint:recommended"],
+  "rules": {
+    "end-event-required": "error",
+    "label-required": "error",
+    "no-gateway-join-fork": "error",
+    "start-event-required": "error"
+  }
+}

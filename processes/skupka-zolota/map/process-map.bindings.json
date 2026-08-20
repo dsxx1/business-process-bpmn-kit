@@ -1,0 +1,64 @@
+{
+  "schema": "human-map-bpmn-bindings/v1",
+  "process_id": "GOLD-BUYING",
+  "map_ref": "processes/skupka-zolota/map/process-map.workflow.json",
+  "bpmn_ref": "processes/skupka-zolota/bpmn/process.bpmn",
+  "meta_ref": "processes/skupka-zolota/bpmn/process.meta.json",
+  "bindings": [
+    {
+      "map_node_id": "request",
+      "bpmn_element_ids": ["StartEvent_ClientRequest", "Task_ClarifyClientRequest"],
+      "process_link_ids": []
+    },
+    {
+      "map_node_id": "inspect",
+      "bpmn_element_ids": ["Gateway_Scope", "Task_InspectItem", "Gateway_ItemAccepted", "Gateway_MarkingCodeCheckRequired", "Task_CheckMarkingCode", "Gateway_MarkingCodeValid"],
+      "process_link_ids": []
+    },
+    {
+      "map_node_id": "price",
+      "bpmn_element_ids": ["Task_CalculatePreliminaryPrice"],
+      "process_link_ids": []
+    },
+    {
+      "map_node_id": "approval",
+      "bpmn_element_ids": ["Gateway_HighEvaluationNeeded", "CallActivity_HighEvaluation", "Gateway_HighApproved"],
+      "process_link_ids": ["LINK-GOLD-BUYING-01"]
+    },
+    {
+      "map_node_id": "agreement",
+      "bpmn_element_ids": ["Task_IdentifyClient", "Gateway_IdentificationComplete", "Gateway_IdentityDocumentRefused", "SendTask_NotifyFinMonitoring", "Task_AgreeTermsAndPrice", "Gateway_TermsAccepted"],
+      "process_link_ids": ["LINK-GOLD-BUYING-05"]
+    },
+    {
+      "map_node_id": "deal",
+      "bpmn_element_ids": ["Task_PrepareDocuments", "Task_VerifyTermsAndDocuments", "Task_SignPostAndConfirmPayment", "Gateway_PostedError"],
+      "process_link_ids": []
+    },
+    {
+      "map_node_id": "storage",
+      "bpmn_element_ids": ["Task_SecureAndPrepareHandoff", "Gateway_FinalConfirmations", "EndEvent_Success"],
+      "process_link_ids": []
+    },
+    {
+      "map_node_id": "alternate",
+      "bpmn_element_ids": ["EndEvent_OtherProcess", "EndEvent_MarkingProcessHandoff"],
+      "process_link_ids": ["LINK-GOLD-BUYING-03", "LINK-GOLD-BUYING-04"]
+    },
+    {
+      "map_node_id": "stop",
+      "bpmn_element_ids": ["EndEvent_ItemRejected", "EndEvent_IdentityRejected", "EndEvent_NoDeal", "EndEvent_NotComplete"],
+      "process_link_ids": []
+    },
+    {
+      "map_node_id": "correction",
+      "bpmn_element_ids": ["CallActivity_HandlePostedError", "EndEvent_ErrorRouted"],
+      "process_link_ids": ["LINK-GOLD-BUYING-02"]
+    },
+    {
+      "map_node_id": "warehouse",
+      "bpmn_element_ids": ["EndEvent_Success"],
+      "process_link_ids": ["LINK-GOLD-BUYING-06", "LINK-GOLD-BUYING-07"]
+    }
+  ]
+}

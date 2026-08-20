@@ -1,0 +1,125 @@
+{
+  "schema": "business-process-bpmn-package/v1",
+  "process_id": "GOLD-BUYING",
+  "title": "Скупка золота и драгоценных металлов",
+  "variant": "as-is",
+  "version": "1.1.0",
+  "status": "review-ready",
+  "canonicality": {
+    "syntax_status": "validated",
+    "profile_status": "validated",
+    "business_status": "pending_human_decision"
+  },
+  "bpmn": {
+    "file": "process.bpmn",
+    "definitions_id": "Definitions_GoldBuying",
+    "process_element_id": "Process_GoldBuying",
+    "collaboration_id": "Collaboration_GoldBuying",
+    "standard": "BPMN 2.0.2",
+    "is_executable": false
+  },
+  "engine": null,
+  "source_card": {
+    "ref": "processes/skupka-zolota/process-card.md",
+    "sha256": "08c25eb97e43194fb4c3a656cbd944d9ad20155341ea93d20bfd1a7b5b6cc14e"
+  },
+  "evidence": [
+    {
+      "evidence_id": "EV-GOLD-BUYING-01",
+      "ref": "processes/skupka-zolota/evidence.md",
+      "sha256": "094d54106913d4d4d6dd9c4134534a59020ede89620ab06d220805188e207b22",
+      "role": "Краткая трасса оснований, границ доказанности и открытых вопросов"
+    }
+  ],
+  "process_links": [
+    {
+      "link_id": "LINK-GOLD-BUYING-01",
+      "source_element_id": "CallActivity_HighEvaluation",
+      "relation": "call",
+      "label": "Открыть процесс согласования повышенной оценки",
+      "target_status": "candidate",
+      "target_process_id": "HIGH-EVALUATION-APPROVAL",
+      "target_ref": "processes/skupka-zolota/related-processes/Согласование повышенной оценки в скупке.md",
+      "candidate_targets": []
+    },
+    {
+      "link_id": "LINK-GOLD-BUYING-02",
+      "source_element_id": "CallActivity_HandlePostedError",
+      "relation": "exception",
+      "label": "Открыть процесс исправления проведённой операции",
+      "target_status": "candidate",
+      "target_process_id": "POSTED-OPERATION-CORRECTION",
+      "target_ref": "processes/skupka-zolota/related-processes/Исправление или отмена ошибочно проведённой операции.md",
+      "candidate_targets": []
+    },
+    {
+      "link_id": "LINK-GOLD-BUYING-03",
+      "source_element_id": "EndEvent_OtherProcess",
+      "relation": "alternate",
+      "label": "Перейти к обработке другого вида обращения",
+      "target_status": "unresolved",
+      "target_process_id": null,
+      "target_ref": null,
+      "candidate_targets": [
+        {
+          "target_process_id": "GOLD-LOAN",
+          "title": "Выдача займа под залог золота",
+          "target_status": "candidate",
+          "target_ref": "processes/skupka-zolota/related-processes/Выдача займа под залог золота.md"
+        },
+        {
+          "target_process_id": "TECH-BUYING",
+          "title": "Скупка техники",
+          "target_status": "candidate",
+          "target_ref": "processes/skupka-zolota/related-processes/Скупка техники.md"
+        }
+      ]
+    },
+    {
+      "link_id": "LINK-GOLD-BUYING-04",
+      "source_element_id": "EndEvent_MarkingProcessHandoff",
+      "relation": "handoff",
+      "label": "Перейти к подготовке маркировки",
+      "target_status": "candidate",
+      "target_process_id": "PRODUCT-MARKING-HANDOFF",
+      "target_ref": "processes/skupka-zolota/related-processes/Подготовка товара к маркировке и получение после маркировки.md",
+      "candidate_targets": []
+    },
+    {
+      "link_id": "LINK-GOLD-BUYING-05",
+      "source_element_id": "SendTask_NotifyFinMonitoring",
+      "relation": "notification",
+      "label": "Открыть связанный процесс финансового мониторинга",
+      "target_status": "candidate",
+      "target_process_id": "SUSPICIOUS-OPERATION-MONITORING",
+      "target_ref": "processes/skupka-zolota/related-processes/Мониторинг сомнительных операций.md",
+      "candidate_targets": []
+    },
+    {
+      "link_id": "LINK-GOLD-BUYING-06",
+      "source_element_id": "EndEvent_Success",
+      "relation": "handoff",
+      "label": "Перейти к приёму и реализации золота на складе",
+      "target_status": "candidate",
+      "target_process_id": "GOLD-WAREHOUSE-RECEIPT",
+      "target_ref": "processes/skupka-zolota/related-processes/Приём купленного золота на склад и подготовка к дальнейшей реализации.md",
+      "candidate_targets": []
+    },
+    {
+      "link_id": "LINK-GOLD-BUYING-07",
+      "source_element_id": "EndEvent_Success",
+      "relation": "notification",
+      "label": "Открыть связанный процесс службы безопасности после сделки",
+      "target_status": "unresolved",
+      "target_process_id": null,
+      "target_ref": null,
+      "candidate_targets": []
+    }
+  ],
+  "review": {
+    "owner_role": null,
+    "human_decision": "not_recorded",
+    "questions_file": "questions.json",
+    "decisions_file": "decisions.json"
+  }
+}

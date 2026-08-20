@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "business-process-bpmn-questions/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "process_id", "model_version", "questions"],
+  "properties": {
+    "schema": { "const": "business-process-bpmn-questions/v1" },
+    "process_id": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]{2,63}$" },
+    "model_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["question_id", "title", "status", "blocking", "owner_role", "source_element_ids"],
+        "properties": {
+          "question_id": { "type": "string", "pattern": "^Q-[A-Z0-9-]+-[0-9]{3}$" },
+          "title": { "type": "string", "minLength": 3 },
+          "status": { "enum": ["open", "answered", "superseded"] },
+          "blocking": { "type": "boolean" },
+          "owner_role": { "type": ["string", "null"] },
+          "source_element_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

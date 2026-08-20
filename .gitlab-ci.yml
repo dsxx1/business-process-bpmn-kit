@@ -1,0 +1,17 @@
+stages:
+  - test
+
+bpmn_validation:
+  stage: test
+  image: node:22-bookworm-slim
+  cache:
+    key:
+      files:
+        - tools/bpmn/package-lock.json
+    paths:
+      - tools/bpmn/.npm/
+  before_script:
+    - cd tools/bpmn
+    - npm ci --cache .npm --prefer-offline
+  script:
+    - npm run verify:ci

@@ -1,0 +1,6 @@
+{
+  "schema": "business-process-bpmn-decisions/v1",
+  "process_id": "PROCESS-TEMPLATE",
+  "model_version": "0.1.0",
+  "decisions": []
+}

@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_GoldBuying" targetNamespace="https://sks.local/business-processes/gold-buying/v1" exporter="Business Process BPMN Kit" exporterVersion="1.0.0">
+  <bpmn:message id="Message_ClientRequest" name="Обращение клиента о продаже золота или лома" />
+  <bpmn:message id="Message_FinMonitoringNotice" name="Уведомление об отказе предъявить документ, удостоверяющий личность" />
+  <bpmn:message id="Message_ProcessHandoff" name="Изделие и учётные данные готовы к следующему процессу" />
+  <bpmn:collaboration id="Collaboration_GoldBuying" name="Скупка золота и драгоценных металлов">
+    <bpmn:participant id="Participant_Client" name="Клиент" />
+    <bpmn:participant id="Participant_BuyingOrganization" name="Организация · клиентская скупка" processRef="Process_GoldBuying" />
+    <bpmn:participant id="Participant_FinMonitoring" name="Финансовый мониторинг · связанный контур" />
+    <bpmn:participant id="Participant_NextProcess" name="Следующий внутренний процесс · цель требует утверждения" />
+    <bpmn:messageFlow id="MessageFlow_ClientRequest" name="Хочет безвозвратно продать изделие" sourceRef="Participant_Client" targetRef="StartEvent_ClientRequest" messageRef="Message_ClientRequest" />
+    <bpmn:messageFlow id="MessageFlow_FinMonitoring" name="Незамедлительное уведомление" sourceRef="SendTask_NotifyFinMonitoring" targetRef="Participant_FinMonitoring" messageRef="Message_FinMonitoringNotice" />
+    <bpmn:messageFlow id="MessageFlow_NextProcess" name="Передача изделия и учётных данных" sourceRef="EndEvent_Success" targetRef="Participant_NextProcess" messageRef="Message_ProcessHandoff" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_GoldBuying" name="Скупка золота и драгоценных металлов · текущая модель · ожидает утверждения" isExecutable="false">
+    <bpmn:documentation textFormat="text/markdown">Технически переносимая модель BPMN 2.0.2. Граница, владелец, порядок финальных действий и некоторые связанные процессы требуют решения владельца. Модель предназначена для обсуждения и импорта, но не является исполняемым регламентом.</bpmn:documentation>
+    <bpmn:laneSet id="LaneSet_GoldBuying">
+      <bpmn:lane id="Lane_ProductSpecialist" name="Товаровед / товаровед-кассир">
+        <bpmn:flowNodeRef>StartEvent_ClientRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ClarifyClientRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Scope</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_OtherProcess</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InspectItem</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ItemAccepted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ItemRejected</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_MarkingCodeCheckRequired</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CheckMarkingCode</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_MarkingCodeValid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_MarkingChecksComplete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_MarkingProcessHandoff</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CalculatePreliminaryPrice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_IdentifyClient</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_IdentificationComplete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_IdentityDocumentRefused</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SendTask_NotifyFinMonitoring</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_IdentityRejectJoin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_IdentityRejected</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AgreeTermsAndPrice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_HighEvaluationNeeded</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>CallActivity_HighEvaluation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_HighApproved</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_OfferStandardPrice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_TermsJoin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_TermsAccepted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_NoDeal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PrepareDocuments</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VerifyTermsAndDocuments</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SignPostAndConfirmPayment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_PostedError</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>CallActivity_HandlePostedError</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ErrorRouted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SecureAndPrepareHandoff</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_FinalConfirmations</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_NotComplete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Success</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_ClientRequest" name="Клиент хочет продать золото или лом">
+      <bpmn:outgoing>Flow_ClientRequestToClarification</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_ClientRequest" messageRef="Message_ClientRequest" />
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_ClarifyClientRequest" name="Уточнить запрос клиента">
+      <bpmn:documentation>Подтвердить, что клиент выбирает безвозвратную продажу золота или лома, а не залог, технику, антиквариат или только консультацию.</bpmn:documentation>
+      <bpmn:incoming>Flow_ClientRequestToClarification</bpmn:incoming>
+      <bpmn:outgoing>Flow_ClarificationToScopeDecision</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Scope" name="Это безвозвратная скупка золота?">
+      <bpmn:incoming>Flow_ClarificationToScopeDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_GoldBuyingConfirmedToItemInspection</bpmn:outgoing>
+      <bpmn:outgoing>Flow_OtherRequestToAlternateProcess</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_OtherProcess" name="Передано в другой процесс или консультацию">
+      <bpmn:incoming>Flow_OtherRequestToAlternateProcess</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_InspectItem" name="Проверить изделие">
+      <bpmn:documentation>Определить металл, пробу, вес, вставки и состояние. Способ проверки должен соответствовать действующему регламенту.</bpmn:documentation>
+      <bpmn:incoming>Flow_GoldBuyingConfirmedToItemInspection</bpmn:incoming>
+      <bpmn:outgoing>Flow_ItemInspectionToAcceptanceDecision</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_ItemAccepted" name="Изделие допустимо принять?">
+      <bpmn:incoming>Flow_ItemInspectionToAcceptanceDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_ItemAcceptedToMarkingCheckDecision</bpmn:outgoing>
+      <bpmn:outgoing>Flow_ItemRejectedToRejectionEnd</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_ItemRejected" name="Отказ до оформления · изделие не принято">
+      <bpmn:incoming>Flow_ItemRejectedToRejectionEnd</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="Gateway_MarkingCodeCheckRequired" name="Нужно проверить маркировочный код изделия?">
+      <bpmn:incoming>Flow_ItemAcceptedToMarkingCheckDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_MarkingCheckRequiredToCodeCheck</bpmn:outgoing>
+      <bpmn:outgoing>Flow_MarkingCheckNotRequiredToMarkingMerge</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_CheckMarkingCode" name="Проверить маркировочный код, статус и вес изделия">
+      <bpmn:documentation>Только для категорий, перечисленных во внутренних правилах. Проверить читаемость, допустимый статус и совпадение веса с профильной государственной информационной системой.</bpmn:documentation>
+      <bpmn:incoming>Flow_MarkingCheckRequiredToCodeCheck</bpmn:incoming>
+      <bpmn:outgoing>Flow_MarkingCodeCheckedToValidationDecision</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_MarkingCodeValid" name="Проверка маркировочного кода пройдена?">
+      <bpmn:incoming>Flow_MarkingCodeCheckedToValidationDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_MarkingCodeValidToMarkingMerge</bpmn:outgoing>
+      <bpmn:outgoing>Flow_MarkingCodeInvalidToMarkingProcess</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_MarkingProcessHandoff" name="Передано в процесс маркировки по внутренним правилам">
+      <bpmn:incoming>Flow_MarkingCodeInvalidToMarkingProcess</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="Gateway_MarkingChecksComplete">
+      <bpmn:incoming>Flow_MarkingCheckNotRequiredToMarkingMerge</bpmn:incoming>
+      <bpmn:incoming>Flow_MarkingCodeValidToMarkingMerge</bpmn:incoming>
+      <bpmn:outgoing>Flow_MarkingChecksCompleteToPreliminaryPrice</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_CalculatePreliminaryPrice" name="Рассчитать предварительную цену">
+      <bpmn:documentation>Внести категорию, пробу, вес, вычет вставок и описание. Использовать тариф и расчёт системы, не ручную формулу из отдельного интервью.</bpmn:documentation>
+      <bpmn:incoming>Flow_MarkingChecksCompleteToPreliminaryPrice</bpmn:incoming>
+      <bpmn:outgoing>Flow_PreliminaryPriceToClientIdentification</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_IdentifyClient" name="Идентифицировать клиента">
+      <bpmn:documentation>Проверить возраст от 18 лет, допустимый действующий документ, удостоверяющий личность, гражданство и обязательные сведения, предусмотренные внутренними правилами и формой рабочей системы.</bpmn:documentation>
+      <bpmn:incoming>Flow_PreliminaryPriceToClientIdentification</bpmn:incoming>
+      <bpmn:outgoing>Flow_ClientIdentificationToCompletenessDecision</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_IdentificationComplete" name="Полная идентификация завершена?">
+      <bpmn:incoming>Flow_ClientIdentificationToCompletenessDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_IdentificationCompleteToTermsAgreement</bpmn:outgoing>
+      <bpmn:outgoing>Flow_IdentificationIncompleteToDocumentRefusalDecision</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_IdentityDocumentRefused" name="Клиент отказался предъявить документ, удостоверяющий личность?">
+      <bpmn:incoming>Flow_IdentificationIncompleteToDocumentRefusalDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_IdentityDocumentRefusedToFinancialMonitoring</bpmn:outgoing>
+      <bpmn:outgoing>Flow_OtherIdentificationFailureToRejectionMerge</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sendTask id="SendTask_NotifyFinMonitoring" name="Уведомить финансовый мониторинг" messageRef="Message_FinMonitoringNotice">
+      <bpmn:documentation>При отказе клиента предъявить документ, удостоверяющий личность, отказать в операции и незамедлительно уведомить отдел финансового мониторинга в установленном порядке.</bpmn:documentation>
+      <bpmn:incoming>Flow_IdentityDocumentRefusedToFinancialMonitoring</bpmn:incoming>
+      <bpmn:outgoing>Flow_FinancialMonitoringNotifiedToRejectionMerge</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:exclusiveGateway id="Gateway_IdentityRejectJoin">
+      <bpmn:incoming>Flow_OtherIdentificationFailureToRejectionMerge</bpmn:incoming>
+      <bpmn:incoming>Flow_FinancialMonitoringNotifiedToRejectionMerge</bpmn:incoming>
+      <bpmn:outgoing>Flow_RejectionMergeToIdentificationRejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_IdentityRejected" name="Отказ до оформления · идентификация не завершена">
+      <bpmn:incoming>Flow_RejectionMergeToIdentificationRejected</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_AgreeTermsAndPrice" name="Согласовать условия и цену">
+      <bpmn:documentation>Сообщить клиенту условия и стандартную сумму. Порог, полномочия, канал и срок согласования повышенной оценки пока не утверждены единым правилом.</bpmn:documentation>
+      <bpmn:incoming>Flow_IdentificationCompleteToTermsAgreement</bpmn:incoming>
+      <bpmn:outgoing>Flow_TermsAgreementToHighEvaluationDecision</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_HighEvaluationNeeded" name="Нужна повышенная оценка?">
+      <bpmn:incoming>Flow_TermsAgreementToHighEvaluationDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_HighEvaluationNotRequiredToTermsMerge</bpmn:outgoing>
+      <bpmn:outgoing>Flow_HighEvaluationRequiredToApprovalProcess</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:callActivity id="CallActivity_HighEvaluation" name="Согласовать повышенную оценку" calledElement="HIGH-EVALUATION-APPROVAL">
+      <bpmn:documentation>Связанный процесс-кандидат. Точная матрица полномочий, канал и срок согласования требуют решения владельца процесса.</bpmn:documentation>
+      <bpmn:incoming>Flow_HighEvaluationRequiredToApprovalProcess</bpmn:incoming>
+      <bpmn:outgoing>Flow_ApprovalProcessCompletedToDecision</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:exclusiveGateway id="Gateway_HighApproved" name="Повышенная оценка согласована?">
+      <bpmn:incoming>Flow_ApprovalProcessCompletedToDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_HighEvaluationApprovedToTermsMerge</bpmn:outgoing>
+      <bpmn:outgoing>Flow_HighEvaluationRejectedToStandardPriceOffer</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_OfferStandardPrice" name="Предложить стандартную цену">
+      <bpmn:incoming>Flow_HighEvaluationRejectedToStandardPriceOffer</bpmn:incoming>
+      <bpmn:outgoing>Flow_StandardPriceOfferToTermsMerge</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_TermsJoin">
+      <bpmn:incoming>Flow_HighEvaluationNotRequiredToTermsMerge</bpmn:incoming>
+      <bpmn:incoming>Flow_HighEvaluationApprovedToTermsMerge</bpmn:incoming>
+      <bpmn:incoming>Flow_StandardPriceOfferToTermsMerge</bpmn:incoming>
+      <bpmn:outgoing>Flow_TermsMergeToClientAcceptanceDecision</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_TermsAccepted" name="Клиент принял итоговые условия?">
+      <bpmn:incoming>Flow_TermsMergeToClientAcceptanceDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_TermsAcceptedToDocumentPreparation</bpmn:outgoing>
+      <bpmn:outgoing>Flow_TermsRejectedToNoDeal</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_NoDeal" name="Обращение завершено без сделки">
+      <bpmn:incoming>Flow_TermsRejectedToNoDeal</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_PrepareDocuments" name="Подготовить документы в рабочей системе">
+      <bpmn:documentation>Заполнить в рабочей системе документ «Квитанция скупки»: указать организацию, склад, тариф, клиента, способ выплаты и строки изделий; подготовить квитанцию и договор.</bpmn:documentation>
+      <bpmn:incoming>Flow_TermsAcceptedToDocumentPreparation</bpmn:incoming>
+      <bpmn:outgoing>Flow_DocumentsPreparedToVerification</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_VerifyTermsAndDocuments" name="Проверить условия и документы">
+      <bpmn:documentation>Клиент проверяет описание изделия и сумму. Состав и количество документов должны определяться действующей инструкцией.</bpmn:documentation>
+      <bpmn:incoming>Flow_DocumentsPreparedToVerification</bpmn:incoming>
+      <bpmn:outgoing>Flow_DocumentsVerifiedToSigningPostingPayment</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_SignPostAndConfirmPayment" name="Подписать документы, провести операцию и подтвердить выплату">
+      <bpmn:documentation>Модель намеренно не задаёт точный порядок печати, подписи, проведения и выплаты: источники расходятся, а упомянутые в одном из внутренних документов отдельные инструкции не найдены. Статус «Принято» сам по себе не подтверждает выплату и передачу на хранение.</bpmn:documentation>
+      <bpmn:incoming>Flow_DocumentsVerifiedToSigningPostingPayment</bpmn:incoming>
+      <bpmn:outgoing>Flow_SigningPostingPaymentToErrorDecision</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_PostedError" name="После проведения выявлена ошибка?">
+      <bpmn:incoming>Flow_SigningPostingPaymentToErrorDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_NoPostedErrorToSecureHandoff</bpmn:outgoing>
+      <bpmn:outgoing>Flow_PostedErrorToCorrectionProcess</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:callActivity id="CallActivity_HandlePostedError" name="Исправить проведённую операцию" calledElement="POSTED-OPERATION-CORRECTION">
+      <bpmn:documentation>В день операции и только когда это разрешено — отдельная ошибочная операция или отмена. Поздние случаи, движение партии и регистрация в профильной государственной информационной системе требуют передачи на отдельное рассмотрение.</bpmn:documentation>
+      <bpmn:incoming>Flow_PostedErrorToCorrectionProcess</bpmn:incoming>
+      <bpmn:outgoing>Flow_CorrectionProcessToErrorRoutedEnd</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="EndEvent_ErrorRouted" name="Операция передана на исправление или эскалацию">
+      <bpmn:incoming>Flow_CorrectionProcessToErrorRoutedEnd</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_SecureAndPrepareHandoff" name="Обеспечить защищённое хранение и подготовить передачу">
+      <bpmn:documentation>Маркировать или упаковать изделие принятым способом, поместить в защищённое хранение и подготовить реестр, акт или иные данные для следующего процесса.</bpmn:documentation>
+      <bpmn:incoming>Flow_NoPostedErrorToSecureHandoff</bpmn:incoming>
+      <bpmn:outgoing>Flow_SecureHandoffToFinalConfirmationDecision</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_FinalConfirmations" name="Подтверждены приём изделия, выплата и хранение?">
+      <bpmn:incoming>Flow_SecureHandoffToFinalConfirmationDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_FinalConfirmationsCompleteToSuccessEnd</bpmn:outgoing>
+      <bpmn:outgoing>Flow_FinalConfirmationsIncompleteToIncompleteEnd</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_NotComplete" name="Не считать сделку завершённой">
+      <bpmn:incoming>Flow_FinalConfirmationsIncompleteToIncompleteEnd</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_Success" name="Сделка завершена · готово к следующему процессу">
+      <bpmn:incoming>Flow_FinalConfirmationsCompleteToSuccessEnd</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_NextProcess" messageRef="Message_ProcessHandoff" />
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_ClientRequestToClarification" sourceRef="StartEvent_ClientRequest" targetRef="Task_ClarifyClientRequest" />
+    <bpmn:sequenceFlow id="Flow_ClarificationToScopeDecision" sourceRef="Task_ClarifyClientRequest" targetRef="Gateway_Scope" />
+    <bpmn:sequenceFlow id="Flow_GoldBuyingConfirmedToItemInspection" name="Да" sourceRef="Gateway_Scope" targetRef="Task_InspectItem" />
+    <bpmn:sequenceFlow id="Flow_OtherRequestToAlternateProcess" name="Нет · другой вид обращения" sourceRef="Gateway_Scope" targetRef="EndEvent_OtherProcess" />
+    <bpmn:sequenceFlow id="Flow_ItemInspectionToAcceptanceDecision" sourceRef="Task_InspectItem" targetRef="Gateway_ItemAccepted" />
+    <bpmn:sequenceFlow id="Flow_ItemAcceptedToMarkingCheckDecision" name="Да" sourceRef="Gateway_ItemAccepted" targetRef="Gateway_MarkingCodeCheckRequired" />
+    <bpmn:sequenceFlow id="Flow_ItemRejectedToRejectionEnd" name="Нет" sourceRef="Gateway_ItemAccepted" targetRef="EndEvent_ItemRejected" />
+    <bpmn:sequenceFlow id="Flow_MarkingCheckRequiredToCodeCheck" name="Да" sourceRef="Gateway_MarkingCodeCheckRequired" targetRef="Task_CheckMarkingCode" />
+    <bpmn:sequenceFlow id="Flow_MarkingCheckNotRequiredToMarkingMerge" name="Нет" sourceRef="Gateway_MarkingCodeCheckRequired" targetRef="Gateway_MarkingChecksComplete" />
+    <bpmn:sequenceFlow id="Flow_MarkingCodeCheckedToValidationDecision" sourceRef="Task_CheckMarkingCode" targetRef="Gateway_MarkingCodeValid" />
+    <bpmn:sequenceFlow id="Flow_MarkingCodeValidToMarkingMerge" name="Да" sourceRef="Gateway_MarkingCodeValid" targetRef="Gateway_MarkingChecksComplete" />
+    <bpmn:sequenceFlow id="Flow_MarkingChecksCompleteToPreliminaryPrice" sourceRef="Gateway_MarkingChecksComplete" targetRef="Task_CalculatePreliminaryPrice" />
+    <bpmn:sequenceFlow id="Flow_MarkingCodeInvalidToMarkingProcess" name="Нет" sourceRef="Gateway_MarkingCodeValid" targetRef="EndEvent_MarkingProcessHandoff" />
+    <bpmn:sequenceFlow id="Flow_PreliminaryPriceToClientIdentification" sourceRef="Task_CalculatePreliminaryPrice" targetRef="Task_IdentifyClient" />
+    <bpmn:sequenceFlow id="Flow_ClientIdentificationToCompletenessDecision" sourceRef="Task_IdentifyClient" targetRef="Gateway_IdentificationComplete" />
+    <bpmn:sequenceFlow id="Flow_IdentificationCompleteToTermsAgreement" name="Да" sourceRef="Gateway_IdentificationComplete" targetRef="Task_AgreeTermsAndPrice" />
+    <bpmn:sequenceFlow id="Flow_IdentificationIncompleteToDocumentRefusalDecision" name="Нет" sourceRef="Gateway_IdentificationComplete" targetRef="Gateway_IdentityDocumentRefused" />
+    <bpmn:sequenceFlow id="Flow_IdentityDocumentRefusedToFinancialMonitoring" name="Да" sourceRef="Gateway_IdentityDocumentRefused" targetRef="SendTask_NotifyFinMonitoring" />
+    <bpmn:sequenceFlow id="Flow_OtherIdentificationFailureToRejectionMerge" name="Нет" sourceRef="Gateway_IdentityDocumentRefused" targetRef="Gateway_IdentityRejectJoin" />
+    <bpmn:sequenceFlow id="Flow_FinancialMonitoringNotifiedToRejectionMerge" sourceRef="SendTask_NotifyFinMonitoring" targetRef="Gateway_IdentityRejectJoin" />
+    <bpmn:sequenceFlow id="Flow_RejectionMergeToIdentificationRejected" sourceRef="Gateway_IdentityRejectJoin" targetRef="EndEvent_IdentityRejected" />
+    <bpmn:sequenceFlow id="Flow_TermsAgreementToHighEvaluationDecision" sourceRef="Task_AgreeTermsAndPrice" targetRef="Gateway_HighEvaluationNeeded" />
+    <bpmn:sequenceFlow id="Flow_HighEvaluationNotRequiredToTermsMerge" name="Нет" sourceRef="Gateway_HighEvaluationNeeded" targetRef="Gateway_TermsJoin" />
+    <bpmn:sequenceFlow id="Flow_HighEvaluationRequiredToApprovalProcess" name="Да" sourceRef="Gateway_HighEvaluationNeeded" targetRef="CallActivity_HighEvaluation" />
+    <bpmn:sequenceFlow id="Flow_ApprovalProcessCompletedToDecision" sourceRef="CallActivity_HighEvaluation" targetRef="Gateway_HighApproved" />
+    <bpmn:sequenceFlow id="Flow_HighEvaluationApprovedToTermsMerge" name="Да" sourceRef="Gateway_HighApproved" targetRef="Gateway_TermsJoin" />
+    <bpmn:sequenceFlow id="Flow_HighEvaluationRejectedToStandardPriceOffer" name="Нет" sourceRef="Gateway_HighApproved" targetRef="Task_OfferStandardPrice" />
+    <bpmn:sequenceFlow id="Flow_StandardPriceOfferToTermsMerge" sourceRef="Task_OfferStandardPrice" targetRef="Gateway_TermsJoin" />
+    <bpmn:sequenceFlow id="Flow_TermsMergeToClientAcceptanceDecision" sourceRef="Gateway_TermsJoin" targetRef="Gateway_TermsAccepted" />
+    <bpmn:sequenceFlow id="Flow_TermsAcceptedToDocumentPreparation" name="Да" sourceRef="Gateway_TermsAccepted" targetRef="Task_PrepareDocuments" />
+    <bpmn:sequenceFlow id="Flow_TermsRejectedToNoDeal" name="Нет" sourceRef="Gateway_TermsAccepted" targetRef="EndEvent_NoDeal" />
+    <bpmn:sequenceFlow id="Flow_DocumentsPreparedToVerification" sourceRef="Task_PrepareDocuments" targetRef="Task_VerifyTermsAndDocuments" />
+    <bpmn:sequenceFlow id="Flow_DocumentsVerifiedToSigningPostingPayment" sourceRef="Task_VerifyTermsAndDocuments" targetRef="Task_SignPostAndConfirmPayment" />
+    <bpmn:sequenceFlow id="Flow_SigningPostingPaymentToErrorDecision" sourceRef="Task_SignPostAndConfirmPayment" targetRef="Gateway_PostedError" />
+    <bpmn:sequenceFlow id="Flow_NoPostedErrorToSecureHandoff" name="Нет" sourceRef="Gateway_PostedError" targetRef="Task_SecureAndPrepareHandoff" />
+    <bpmn:sequenceFlow id="Flow_PostedErrorToCorrectionProcess" name="Да" sourceRef="Gateway_PostedError" targetRef="CallActivity_HandlePostedError" />
+    <bpmn:sequenceFlow id="Flow_CorrectionProcessToErrorRoutedEnd" sourceRef="CallActivity_HandlePostedError" targetRef="EndEvent_ErrorRouted" />
+    <bpmn:sequenceFlow id="Flow_SecureHandoffToFinalConfirmationDecision" sourceRef="Task_SecureAndPrepareHandoff" targetRef="Gateway_FinalConfirmations" />
+    <bpmn:sequenceFlow id="Flow_FinalConfirmationsCompleteToSuccessEnd" name="Да" sourceRef="Gateway_FinalConfirmations" targetRef="EndEvent_Success" />
+    <bpmn:sequenceFlow id="Flow_FinalConfirmationsIncompleteToIncompleteEnd" name="Нет" sourceRef="Gateway_FinalConfirmations" targetRef="EndEvent_NotComplete" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration_GoldBuying">
+    <bpmndi:BPMNPlane id="BPMNPlane_Collaboration_GoldBuying" bpmnElement="Collaboration_GoldBuying">
+      <bpmndi:BPMNShape id="BPMNShape_Participant_Client" bpmnElement="Participant_Client" isHorizontal="true">
+        <dc:Bounds x="40" y="20" width="320" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Participant_BuyingOrganization" bpmnElement="Participant_BuyingOrganization" isHorizontal="true">
+        <dc:Bounds x="40" y="140" width="1920" height="800" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Participant_FinMonitoring" bpmnElement="Participant_FinMonitoring" isHorizontal="true">
+        <dc:Bounds x="600" y="980" width="400" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Participant_NextProcess" bpmnElement="Participant_NextProcess" isHorizontal="true">
+        <dc:Bounds x="1640" y="20" width="320" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_MessageFlow_ClientRequest" bpmnElement="MessageFlow_ClientRequest">
+        <di:waypoint x="200" y="100" />
+        <di:waypoint x="200" y="175" />
+        <di:waypoint x="138" y="175" />
+        <di:waypoint x="138" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_MessageFlow_FinMonitoring" bpmnElement="MessageFlow_FinMonitoring">
+        <di:waypoint x="400" y="715" />
+        <di:waypoint x="400" y="847.5" />
+        <di:waypoint x="800" y="847.5" />
+        <di:waypoint x="800" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_MessageFlow_NextProcess" bpmnElement="MessageFlow_NextProcess">
+        <di:waypoint x="1808" y="522" />
+        <di:waypoint x="1808" y="311" />
+        <di:waypoint x="1800" y="311" />
+        <di:waypoint x="1800" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BPMNShape_Lane_ProductSpecialist" bpmnElement="Lane_ProductSpecialist" isHorizontal="true">
+        <dc:Bounds x="70" y="140" width="1890" height="800" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_StartEvent_ClientRequest" bpmnElement="StartEvent_ClientRequest">
+        <dc:Bounds x="120" y="250" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_ClarifyClientRequest" bpmnElement="Task_ClarifyClientRequest">
+        <dc:Bounds x="200" y="228" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_Scope" bpmnElement="Gateway_Scope" isMarkerVisible="true">
+        <dc:Bounds x="340" y="243" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_OtherProcess" bpmnElement="EndEvent_OtherProcess">
+        <dc:Bounds x="347" y="380" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_InspectItem" bpmnElement="Task_InspectItem">
+        <dc:Bounds x="430" y="228" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_ItemAccepted" bpmnElement="Gateway_ItemAccepted" isMarkerVisible="true">
+        <dc:Bounds x="570" y="243" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_ItemRejected" bpmnElement="EndEvent_ItemRejected">
+        <dc:Bounds x="577" y="380" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_MarkingCodeCheckRequired" bpmnElement="Gateway_MarkingCodeCheckRequired" isMarkerVisible="true">
+        <dc:Bounds x="660" y="243" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_CheckMarkingCode" bpmnElement="Task_CheckMarkingCode">
+        <dc:Bounds x="750" y="228" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_MarkingCodeValid" bpmnElement="Gateway_MarkingCodeValid" isMarkerVisible="true">
+        <dc:Bounds x="890" y="243" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_MarkingProcessHandoff" bpmnElement="EndEvent_MarkingProcessHandoff">
+        <dc:Bounds x="897" y="380" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_MarkingChecksComplete" bpmnElement="Gateway_MarkingChecksComplete" isMarkerVisible="true">
+        <dc:Bounds x="980" y="243" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_CalculatePreliminaryPrice" bpmnElement="Task_CalculatePreliminaryPrice">
+        <dc:Bounds x="1060" y="228" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_IdentifyClient" bpmnElement="Task_IdentifyClient">
+        <dc:Bounds x="120" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_IdentificationComplete" bpmnElement="Gateway_IdentificationComplete" isMarkerVisible="true">
+        <dc:Bounds x="260" y="515" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_IdentityDocumentRefused" bpmnElement="Gateway_IdentityDocumentRefused" isMarkerVisible="true">
+        <dc:Bounds x="267" y="650" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_SendTask_NotifyFinMonitoring" bpmnElement="SendTask_NotifyFinMonitoring">
+        <dc:Bounds x="350" y="635" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_IdentityRejectJoin" bpmnElement="Gateway_IdentityRejectJoin" isMarkerVisible="true">
+        <dc:Bounds x="490" y="650" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_IdentityRejected" bpmnElement="EndEvent_IdentityRejected">
+        <dc:Bounds x="577" y="657" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_AgreeTermsAndPrice" bpmnElement="Task_AgreeTermsAndPrice">
+        <dc:Bounds x="350" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_HighEvaluationNeeded" bpmnElement="Gateway_HighEvaluationNeeded" isMarkerVisible="true">
+        <dc:Bounds x="490" y="515" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_CallActivity_HighEvaluation" bpmnElement="CallActivity_HighEvaluation">
+        <dc:Bounds x="580" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_HighApproved" bpmnElement="Gateway_HighApproved" isMarkerVisible="true">
+        <dc:Bounds x="720" y="515" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_OfferStandardPrice" bpmnElement="Task_OfferStandardPrice">
+        <dc:Bounds x="810" y="635" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_TermsJoin" bpmnElement="Gateway_TermsJoin" isMarkerVisible="true">
+        <dc:Bounds x="860" y="515" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_TermsAccepted" bpmnElement="Gateway_TermsAccepted" isMarkerVisible="true">
+        <dc:Bounds x="950" y="515" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_NoDeal" bpmnElement="EndEvent_NoDeal">
+        <dc:Bounds x="957" y="650" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_PrepareDocuments" bpmnElement="Task_PrepareDocuments">
+        <dc:Bounds x="1040" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_VerifyTermsAndDocuments" bpmnElement="Task_VerifyTermsAndDocuments">
+        <dc:Bounds x="1180" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_SignPostAndConfirmPayment" bpmnElement="Task_SignPostAndConfirmPayment">
+        <dc:Bounds x="1320" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_PostedError" bpmnElement="Gateway_PostedError" isMarkerVisible="true">
+        <dc:Bounds x="1460" y="515" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_CallActivity_HandlePostedError" bpmnElement="CallActivity_HandlePostedError">
+        <dc:Bounds x="1450" y="650" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_ErrorRouted" bpmnElement="EndEvent_ErrorRouted">
+        <dc:Bounds x="1597" y="672" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Task_SecureAndPrepareHandoff" bpmnElement="Task_SecureAndPrepareHandoff">
+        <dc:Bounds x="1550" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Gateway_FinalConfirmations" bpmnElement="Gateway_FinalConfirmations" isMarkerVisible="true">
+        <dc:Bounds x="1690" y="515" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_NotComplete" bpmnElement="EndEvent_NotComplete">
+        <dc:Bounds x="1697" y="650" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_Success" bpmnElement="EndEvent_Success">
+        <dc:Bounds x="1790" y="522" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ClientRequestToClarification" bpmnElement="Flow_ClientRequestToClarification">
+        <di:waypoint x="156" y="268" />
+        <di:waypoint x="200" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ClarificationToScopeDecision" bpmnElement="Flow_ClarificationToScopeDecision">
+        <di:waypoint x="300" y="268" />
+        <di:waypoint x="340" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_GoldBuyingConfirmedToItemInspection" bpmnElement="Flow_GoldBuyingConfirmedToItemInspection">
+        <di:waypoint x="390" y="268" />
+        <di:waypoint x="430" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ItemInspectionToAcceptanceDecision" bpmnElement="Flow_ItemInspectionToAcceptanceDecision">
+        <di:waypoint x="530" y="268" />
+        <di:waypoint x="570" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ItemAcceptedToMarkingCheckDecision" bpmnElement="Flow_ItemAcceptedToMarkingCheckDecision">
+        <di:waypoint x="620" y="268" />
+        <di:waypoint x="660" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCheckRequiredToCodeCheck" bpmnElement="Flow_MarkingCheckRequiredToCodeCheck">
+        <di:waypoint x="710" y="268" />
+        <di:waypoint x="750" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCodeCheckedToValidationDecision" bpmnElement="Flow_MarkingCodeCheckedToValidationDecision">
+        <di:waypoint x="850" y="268" />
+        <di:waypoint x="890" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCodeValidToMarkingMerge" bpmnElement="Flow_MarkingCodeValidToMarkingMerge">
+        <di:waypoint x="940" y="268" />
+        <di:waypoint x="980" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingChecksCompleteToPreliminaryPrice" bpmnElement="Flow_MarkingChecksCompleteToPreliminaryPrice">
+        <di:waypoint x="1030" y="268" />
+        <di:waypoint x="1060" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_PreliminaryPriceToClientIdentification" bpmnElement="Flow_PreliminaryPriceToClientIdentification">
+        <di:waypoint x="1110" y="308" />
+        <di:waypoint x="1110" y="404" />
+        <di:waypoint x="170" y="404" />
+        <di:waypoint x="170" y="500" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ClientIdentificationToCompletenessDecision" bpmnElement="Flow_ClientIdentificationToCompletenessDecision">
+        <di:waypoint x="220" y="540" />
+        <di:waypoint x="260" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_IdentificationCompleteToTermsAgreement" bpmnElement="Flow_IdentificationCompleteToTermsAgreement">
+        <di:waypoint x="310" y="540" />
+        <di:waypoint x="350" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_TermsAgreementToHighEvaluationDecision" bpmnElement="Flow_TermsAgreementToHighEvaluationDecision">
+        <di:waypoint x="450" y="540" />
+        <di:waypoint x="490" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_HighEvaluationNotRequiredToTermsMerge" bpmnElement="Flow_HighEvaluationNotRequiredToTermsMerge">
+        <di:waypoint x="540" y="540" />
+        <di:waypoint x="860" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_TermsMergeToClientAcceptanceDecision" bpmnElement="Flow_TermsMergeToClientAcceptanceDecision">
+        <di:waypoint x="910" y="540" />
+        <di:waypoint x="950" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_TermsAcceptedToDocumentPreparation" bpmnElement="Flow_TermsAcceptedToDocumentPreparation">
+        <di:waypoint x="1000" y="540" />
+        <di:waypoint x="1040" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_DocumentsPreparedToVerification" bpmnElement="Flow_DocumentsPreparedToVerification">
+        <di:waypoint x="1140" y="540" />
+        <di:waypoint x="1180" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_DocumentsVerifiedToSigningPostingPayment" bpmnElement="Flow_DocumentsVerifiedToSigningPostingPayment">
+        <di:waypoint x="1280" y="540" />
+        <di:waypoint x="1320" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_SigningPostingPaymentToErrorDecision" bpmnElement="Flow_SigningPostingPaymentToErrorDecision">
+        <di:waypoint x="1420" y="540" />
+        <di:waypoint x="1460" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_NoPostedErrorToSecureHandoff" bpmnElement="Flow_NoPostedErrorToSecureHandoff">
+        <di:waypoint x="1510" y="540" />
+        <di:waypoint x="1550" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_SecureHandoffToFinalConfirmationDecision" bpmnElement="Flow_SecureHandoffToFinalConfirmationDecision">
+        <di:waypoint x="1650" y="540" />
+        <di:waypoint x="1690" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_FinalConfirmationsCompleteToSuccessEnd" bpmnElement="Flow_FinalConfirmationsCompleteToSuccessEnd">
+        <di:waypoint x="1740" y="540" />
+        <di:waypoint x="1790" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_IdentityDocumentRefusedToFinancialMonitoring" bpmnElement="Flow_IdentityDocumentRefusedToFinancialMonitoring">
+        <di:waypoint x="317" y="675" />
+        <di:waypoint x="350" y="675" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_FinancialMonitoringNotifiedToRejectionMerge" bpmnElement="Flow_FinancialMonitoringNotifiedToRejectionMerge">
+        <di:waypoint x="450" y="675" />
+        <di:waypoint x="490" y="675" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_RejectionMergeToIdentificationRejected" bpmnElement="Flow_RejectionMergeToIdentificationRejected">
+        <di:waypoint x="540" y="675" />
+        <di:waypoint x="577" y="675" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_HighEvaluationApprovedToTermsMerge" bpmnElement="Flow_HighEvaluationApprovedToTermsMerge">
+        <di:waypoint x="770" y="540" />
+        <di:waypoint x="860" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_OtherRequestToAlternateProcess" bpmnElement="Flow_OtherRequestToAlternateProcess">
+        <di:waypoint x="365" y="293" />
+        <di:waypoint x="365" y="336.5" />
+        <di:waypoint x="365" y="336.5" />
+        <di:waypoint x="365" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ItemRejectedToRejectionEnd" bpmnElement="Flow_ItemRejectedToRejectionEnd">
+        <di:waypoint x="595" y="293" />
+        <di:waypoint x="595" y="336.5" />
+        <di:waypoint x="595" y="336.5" />
+        <di:waypoint x="595" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCodeInvalidToMarkingProcess" bpmnElement="Flow_MarkingCodeInvalidToMarkingProcess">
+        <di:waypoint x="915" y="293" />
+        <di:waypoint x="915" y="336.5" />
+        <di:waypoint x="915" y="336.5" />
+        <di:waypoint x="915" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_IdentificationIncompleteToDocumentRefusalDecision" bpmnElement="Flow_IdentificationIncompleteToDocumentRefusalDecision">
+        <di:waypoint x="285" y="565" />
+        <di:waypoint x="285" y="607.5" />
+        <di:waypoint x="292" y="607.5" />
+        <di:waypoint x="292" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_HighEvaluationRequiredToApprovalProcess" bpmnElement="Flow_HighEvaluationRequiredToApprovalProcess">
+        <di:waypoint x="540" y="540" />
+        <di:waypoint x="580" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_HighEvaluationRejectedToStandardPriceOffer" bpmnElement="Flow_HighEvaluationRejectedToStandardPriceOffer">
+        <di:waypoint x="745" y="565" />
+        <di:waypoint x="745" y="600" />
+        <di:waypoint x="860" y="600" />
+        <di:waypoint x="860" y="635" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_TermsRejectedToNoDeal" bpmnElement="Flow_TermsRejectedToNoDeal">
+        <di:waypoint x="975" y="565" />
+        <di:waypoint x="975" y="607.5" />
+        <di:waypoint x="975" y="607.5" />
+        <di:waypoint x="975" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_PostedErrorToCorrectionProcess" bpmnElement="Flow_PostedErrorToCorrectionProcess">
+        <di:waypoint x="1485" y="565" />
+        <di:waypoint x="1485" y="607.5" />
+        <di:waypoint x="1500" y="607.5" />
+        <di:waypoint x="1500" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_FinalConfirmationsIncompleteToIncompleteEnd" bpmnElement="Flow_FinalConfirmationsIncompleteToIncompleteEnd">
+        <di:waypoint x="1715" y="565" />
+        <di:waypoint x="1715" y="607.5" />
+        <di:waypoint x="1715" y="607.5" />
+        <di:waypoint x="1715" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCheckNotRequiredToMarkingMerge" bpmnElement="Flow_MarkingCheckNotRequiredToMarkingMerge">
+        <di:waypoint x="710" y="268" />
+        <di:waypoint x="980" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_OtherIdentificationFailureToRejectionMerge" bpmnElement="Flow_OtherIdentificationFailureToRejectionMerge">
+        <di:waypoint x="317" y="675" />
+        <di:waypoint x="490" y="675" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ApprovalProcessCompletedToDecision" bpmnElement="Flow_ApprovalProcessCompletedToDecision">
+        <di:waypoint x="680" y="540" />
+        <di:waypoint x="720" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_StandardPriceOfferToTermsMerge" bpmnElement="Flow_StandardPriceOfferToTermsMerge">
+        <di:waypoint x="860" y="635" />
+        <di:waypoint x="860" y="600" />
+        <di:waypoint x="885" y="600" />
+        <di:waypoint x="885" y="565" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_CorrectionProcessToErrorRoutedEnd" bpmnElement="Flow_CorrectionProcessToErrorRoutedEnd">
+        <di:waypoint x="1550" y="690" />
+        <di:waypoint x="1597" y="690" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

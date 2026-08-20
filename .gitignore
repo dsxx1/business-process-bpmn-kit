@@ -1,0 +1,11 @@
+node_modules/
+.npm/
+temp/
+out/
+.cache/
+.env
+.env.*
+*.log
+*.tmp
+Thumbs.db
+.DS_Store

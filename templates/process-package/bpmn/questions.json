@@ -1,0 +1,15 @@
+{
+  "schema": "business-process-bpmn-questions/v1",
+  "process_id": "PROCESS-TEMPLATE",
+  "model_version": "0.1.0",
+  "questions": [
+    {
+      "question_id": "Q-PROCESS-TEMPLATE-001",
+      "title": "Кто является уполномоченным владельцем нового бизнес-процесса?",
+      "status": "open",
+      "blocking": true,
+      "owner_role": null,
+      "source_element_ids": ["Process_Template"]
+    }
+  ]
+}

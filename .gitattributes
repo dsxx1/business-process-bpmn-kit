@@ -1,0 +1,10 @@
+* text=auto
+*.md text eol=lf
+*.json text eol=lf
+*.mjs text eol=lf
+*.bpmn text eol=lf
+*.html text eol=lf
+*.cmd text eol=crlf
+*.png binary
+*.jpg binary
+*.jpeg binary
