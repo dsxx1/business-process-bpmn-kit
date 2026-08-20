@@ -11,7 +11,9 @@ const outputPath = resolve(derivedRoot, 'process-navigation.html');
 const meta = JSON.parse(readFileSync(resolve(packageRoot, 'process.meta.json'), 'utf8'));
 const registry = JSON.parse(readFileSync(resolve(toolRoot, 'registry', 'processes.json'), 'utf8'));
 const registryIndex = buildRegistryIndex(registry);
-let svg = readFileSync(resolve(derivedRoot, 'process.svg'), 'utf8').replace(/^<\?xml[^>]*>\s*/u, '');
+let svg = readFileSync(resolve(derivedRoot, 'process.svg'), 'utf8')
+  .replace(/\r\n?/gu, '\n')
+  .replace(/^<\?xml[^>]*>\s*/u, '');
 
 function hrefFor(targetRef) {
   if (!targetRef) return null;
@@ -155,7 +157,7 @@ const html = `<!doctype html>
 </html>`;
 
 mkdirSync(derivedRoot, { recursive: true });
-writeFileSync(outputPath, html, 'utf8');
+writeFileSync(outputPath, html.replace(/\r\n?/gu, '\n'), 'utf8');
 console.log(JSON.stringify({
   status: 'built',
   title: meta.title,

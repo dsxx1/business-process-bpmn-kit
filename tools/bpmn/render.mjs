@@ -33,6 +33,22 @@ function runBrowser(browser, args) {
   return result.stdout;
 }
 
+function normalizeSvg(svg) {
+  const randomMarkerIds = [ ...svg.matchAll(/\bid="(marker-[a-z0-9]{20,})"/gu) ]
+    .map((match) => match[1]);
+  const markerIds = new Map();
+  for (const markerId of randomMarkerIds) {
+    if (!markerIds.has(markerId)) {
+      markerIds.set(markerId, `marker-${String(markerIds.size + 1).padStart(4, '0')}`);
+    }
+  }
+  let withStableMarkerIds = svg;
+  for (const [ markerId, stableMarkerId ] of markerIds) {
+    withStableMarkerIds = withStableMarkerIds.replaceAll(markerId, stableMarkerId);
+  }
+  return withStableMarkerIds.replace(/\r\n?/gu, '\n');
+}
+
 const inputPath = resolve(process.argv[2]);
 const outputPaths = process.argv.slice(3).map((path) => resolve(path));
 if (!existsSync(inputPath)) throw new Error(`BPMN file is missing: ${inputPath}`);
@@ -82,7 +98,7 @@ const outputMatch = dumpedDom.match(/<div id="output"[^>]*>([\s\S]*?)<\/div>/);
 if (!outputMatch || !outputMatch[1].includes('<svg')) {
   throw new Error('Rendered SVG was not found in the browser output.');
 }
-const svg = outputMatch[1];
+const svg = normalizeSvg(outputMatch[1]);
 
 for (const outputPath of outputPaths) {
   mkdirSync(dirname(outputPath), { recursive: true });

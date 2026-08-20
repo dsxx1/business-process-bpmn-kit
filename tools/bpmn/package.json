@@ -16,6 +16,7 @@
     "lint:gold": "bpmnlint --config ../../docs/.bpmnlintrc ../../processes/skupka-zolota/bpmn/process.bpmn",
     "render:gold": "node render.mjs ../../processes/skupka-zolota/bpmn/process.bpmn ../../processes/skupka-zolota/bpmn/derived/process.svg ../../processes/skupka-zolota/bpmn/derived/process.png",
     "navigate:gold": "node build-navigation.mjs ../../processes/skupka-zolota/bpmn",
+    "test:derived-determinism": "node test-derived-determinism.mjs",
     "test:navigation:gold": "node test-navigation.mjs ../../processes/skupka-zolota/bpmn/derived/process-navigation.html ../../processes/skupka-zolota/bpmn",
     "hashes:template": "node refresh-package-hashes.mjs ../../templates/process-package/bpmn",
     "validate:template": "node validate-package.mjs ../../templates/process-package/bpmn",
@@ -24,7 +25,7 @@
     "test:template-copy": "node test-template-copy.mjs",
     "test:contracts": "node test-registry-package-contract.mjs && node test-call-activity-contract.mjs",
     "verify:registry": "node verify-registry.mjs",
-    "verify:gold": "npm run localize:map && npm run validate:map-ui && npm run test:map-ui && npm run hashes:gold && npm run validate:gold && npm run lint:gold && npm run test:resolver && npm run render:gold && npm run navigate:gold && npm run test:navigation:gold && npm run validate:gold",
+    "verify:gold": "npm run localize:map && npm run validate:map-ui && npm run test:map-ui && npm run hashes:gold && npm run validate:gold && npm run lint:gold && npm run test:resolver && npm run render:gold && npm run navigate:gold && npm run test:derived-determinism && npm run test:navigation:gold && npm run validate:gold",
     "verify:template": "npm run hashes:template && npm run validate:template && npm run lint:template && npm run test:template-copy",
     "verify:all": "npm run verify:gold && npm run verify:template && npm run test:contracts && npm run verify:registry",
     "verify:ci": "npm run validate:map-ui && npm run test:resolver && npm run validate:template && npm run lint:template && npm run test:template-copy && npm run validate:gold-profile && npm run test:contracts && npm run verify:registry"
