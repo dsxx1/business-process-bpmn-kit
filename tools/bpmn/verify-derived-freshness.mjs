@@ -46,13 +46,54 @@ function runNode(script, args, label) {
   }
 }
 
+function portableRef(path) {
+  return relative(projectRoot, path).split(sep).join('/');
+}
+
+function presentFile(expectedPath, label, stale) {
+  if (existsSync(expectedPath) && statSync(expectedPath).isFile()) return true;
+  stale.push(`${label}: отсутствует ${portableRef(expectedPath)}`);
+  return false;
+}
+
 function assertSame(expectedPath, actualPath, label, stale) {
-  if (!existsSync(expectedPath) || !statSync(expectedPath).isFile()) {
-    stale.push(`${label}: отсутствует ${relative(projectRoot, expectedPath).split(sep).join('/')}`);
-    return;
-  }
+  if (!presentFile(expectedPath, label, stale)) return;
   if (!readFileSync(expectedPath).equals(readFileSync(actualPath))) {
-    stale.push(`${label}: файл устарел ${relative(projectRoot, expectedPath).split(sep).join('/')}`);
+    stale.push(`${label}: файл устарел ${portableRef(expectedPath)}`);
+  }
+}
+
+const PNG_SIGNATURE = Buffer.from([ 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a ]);
+
+// Растр кодирует браузер, поэтому байты PNG зависят от его сборки и платформы:
+// один и тот же BPMN на другой машине даёт другой файл при той же картинке.
+// Поэтому свежесть PNG проверяется по геометрии изображения из заголовка IHDR,
+// а побайтовое сравнение остаётся у воспроизводимых SVG и навигации.
+// Повторяемость самого рендера на одной машине проверяет test-derived-determinism.
+function pngGeometry(path, label, stale) {
+  const buffer = readFileSync(path);
+  if (buffer.length < 33 || !buffer.subarray(0, 8).equals(PNG_SIGNATURE) || buffer.toString('ascii', 12, 16) !== 'IHDR') {
+    stale.push(`${label}: файл не является корректным PNG ${portableRef(path)}`);
+    return null;
+  }
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20),
+    bit_depth: buffer.readUInt8(24),
+    color_type: buffer.readUInt8(25)
+  };
+}
+
+function assertSamePng(expectedPath, actualPath, label, stale) {
+  if (!presentFile(expectedPath, label, stale)) return;
+  const expected = pngGeometry(expectedPath, label, stale);
+  const actual = pngGeometry(actualPath, label, stale);
+  if (!expected || !actual) return;
+  const differences = Object.keys(expected)
+    .filter((key) => expected[key] !== actual[key])
+    .map((key) => `${key}: ${expected[key]} вместо ${actual[key]}`);
+  if (differences.length > 0) {
+    stale.push(`${label}: изображение устарело ${portableRef(expectedPath)} (${differences.join(', ')})`);
   }
 }
 
@@ -91,7 +132,7 @@ try {
     );
 
     assertSame(svgFinalPath, svgTempPath, entry.process_id, stale);
-    assertSame(pngFinalPath, pngTempPath, entry.process_id, stale);
+    assertSamePng(pngFinalPath, pngTempPath, entry.process_id, stale);
     assertSame(navigationFinalPath, navigationTempPath, entry.process_id, stale);
   }
 } finally {
@@ -107,5 +148,7 @@ if (stale.length > 0) {
 console.log(JSON.stringify({
   status: 'passed',
   registered_processes: registry.processes.length,
-  checked_files: registry.processes.length * 3
+  checked_files: registry.processes.length * 3,
+  byte_identical: [ 'process.svg', 'process-navigation.html' ],
+  geometry_identical: [ 'process.png' ]
 }, null, 2));
