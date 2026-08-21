@@ -1,0 +1,83 @@
+{
+  "schema": "archify-map-build-receipt/v1",
+  "tool": {
+    "name": "Archify",
+    "version": "2.14.0+local-humanize",
+    "upstream_version": "2.14.0",
+    "upstream_revision": "7769cf5b2b9500ea7edfae6acbe3ea16c9bf93ef",
+    "build_profile": "local-humanize",
+    "license": "MIT",
+    "runtime_ref": "vendor/archify",
+    "package_sha256": "832badcf59a7e1c25ff171dd5807258ebe831ca27ca041286224640f60f438a9",
+    "manifest_sha256": "d7183055a017d97055fbaaf03bf5366ada179f5efeae4daf2854aef8dd9c8a0b",
+    "vendored_files": 21
+  },
+  "process": {
+    "slug": "vydach",
+    "process_id": "VYDACH",
+    "title": "Выдач"
+  },
+  "source": {
+    "mode": "automatic_draft",
+    "automatic_draft": true,
+    "bpmn": {
+      "ref": "processes/vydach/bpmn/process.bpmn",
+      "sha256": "bf7aad6b29a906fa317133759f959c04656dc00c1d32674edc13b66af9853fc7",
+      "bytes": 6635
+    },
+    "metadata": {
+      "ref": "processes/vydach/bpmn/process.meta.json",
+      "sha256": "bc855b377040530016cd753c973798aea7ed3b46b1d5f853ab5bbcf82d024e42",
+      "bytes": 1156
+    },
+    "workflow": {
+      "ref": "processes/vydach/map/process-map.workflow.json",
+      "sha256": "6b20d494b04eb42bfdca8b72563fd12c0d574d551b53c2f3d3972e0b300f5bf3",
+      "bytes": 4233
+    },
+    "bindings": {
+      "ref": "processes/vydach/map/process-map.bindings.json",
+      "sha256": "8a7b730827a20372e051c213135d15bc36e5e34a68c19e5362666598a2f3d3dc",
+      "bytes": 1221
+    }
+  },
+  "validation": {
+    "quality_profile": "showcase",
+    "checks_passed": 9,
+    "checks_total": 9,
+    "composition_status": "pass",
+    "errors": 0,
+    "warnings": 0,
+    "validate_checks_passed": 9,
+    "validate_checks_total": 9,
+    "map_to_bpmn": {
+      "status": "passed",
+      "map_nodes": 6,
+      "bound_bpmn_elements": 6,
+      "process_links": 0,
+      "validator_ref": "tools/bpmn/validate-map-bindings.mjs",
+      "validator_sha256": "43d339d125670ee2615b687d74ba4f4befb390b68a0c1490caf90d330109c79c"
+    }
+  },
+  "presentation": {
+    "locale": "ru",
+    "localizer_ref": "tools/bpmn/localize-map-ru.mjs",
+    "localizer_sha256": "e0a5842053c143b4db2eeec00bff147fc532072f3e140486c675bafa2431c531",
+    "validator_ref": "tools/bpmn/validate-map-ui.mjs",
+    "validator_sha256": "d327fe7f87b61d32c926b1ffa499b27e49a68705a4e4977d5a3108d4ac1659ba",
+    "raw_archify_artifact_sha256": "68fb41f36516e250d2c56273f28cbee279dd7f499d5294cf7906caf1f6d33f40",
+    "map_ui_validation": "passed"
+  },
+  "artifact": {
+    "ref": "processes/vydach/map/process-map.html",
+    "sha256": "39bbed7eebf6b4e9c28cf3b9c5da7109b25622cb445d095de4f33327568f5c91",
+    "bytes": 646236
+  },
+  "guarantees": {
+    "canonical_bpmn_unchanged": true,
+    "staged_before_commit": true,
+    "rollback_on_commit_error": true,
+    "guarded_inputs_rechecked_before_backup_cleanup": true,
+    "visual_review": "not_run"
+  }
+}

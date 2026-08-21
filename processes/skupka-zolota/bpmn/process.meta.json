@@ -38,8 +38,8 @@
       "relation": "call",
       "label": "Открыть процесс согласования повышенной оценки",
       "target_status": "candidate",
-      "target_process_id": "HIGH-EVALUATION-APPROVAL",
-      "target_ref": "processes/skupka-zolota/related-processes/Согласование повышенной оценки в скупке.md",
+      "target_process_id": "SOGLASOVANIE-POVYSHENNOI-OTSENKI-V-SKUPKE",
+      "target_ref": "processes/skupka-zolota/related-processes/soglasovanie-povyshennoi-otsenki-v-skupke.md",
       "candidate_targets": []
     },
     {

@@ -34,7 +34,7 @@
     <bpmn:endEvent id="EndEvent_ResultDelivered" name="Результат передан">
       <bpmn:incoming>Flow_WorkToSuccess</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:endEvent id="EndEvent_NotPerformed" name="Работа не выполнена или передана в другой процесс">
+    <bpmn:endEvent id="EndEvent_NotPerformed" name="Работа завершена без результата">
       <bpmn:incoming>Flow_CannotPerform</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_StartToClarify" sourceRef="StartEvent_RequestReceived" targetRef="Task_ClarifyInput" />

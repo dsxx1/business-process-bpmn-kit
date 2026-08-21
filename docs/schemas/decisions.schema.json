@@ -13,14 +13,21 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["decision_id", "question_id", "outcome", "actor", "decided_at", "bpmn_sha256", "evidence_sha256"],
+        "required": ["decision_id", "question_id", "outcome", "actor", "comment", "decided_at", "bpmn_sha256", "source_card_sha256", "evidence_sha256"],
         "properties": {
           "decision_id": { "type": "string", "minLength": 3 },
-          "question_id": { "type": "string", "pattern": "^Q-[A-Z0-9-]+-[0-9]{3}$" },
+          "question_id": {
+            "oneOf": [
+              { "type": "string", "pattern": "^Q-[A-Z0-9-]+-[0-9]{3}$" },
+              { "type": "null" }
+            ]
+          },
           "outcome": { "enum": ["approve", "rework", "reject"] },
           "actor": { "type": "string", "minLength": 3 },
+          "comment": { "type": "string", "minLength": 3 },
           "decided_at": { "type": "string", "format": "date-time" },
           "bpmn_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "source_card_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
           "evidence_sha256": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" } }
         }
       }

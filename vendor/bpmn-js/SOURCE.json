@@ -1,0 +1,23 @@
+{
+  "name": "bpmn-js",
+  "version": "18.25.1",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": "https://github.com/bpmn-io/bpmn-js.git",
+  "npm_tarball": "https://registry.npmjs.org/bpmn-js/-/bpmn-js-18.25.1.tgz",
+  "npm_integrity": "sha512-wT/TjzUQw3o5vU6nI2tytOhOm9atf2tOgCdCKF6sQUvokZ0nOEH7yfE9IvwKXclfdUxvdawgU80h909hvQJ9hw==",
+  "npm_shasum": "ba12fe6ddb36adf9650ec157709b0bd98d3d089e",
+  "snapshot_date": "2026-08-21",
+  "vendoring_profile": "minimal-browser-modeler",
+  "selected_upstream_paths": [
+    "LICENSE",
+    "dist/bpmn-modeler.production.min.js",
+    "dist/assets/bpmn-js.css",
+    "dist/assets/diagram-js.css",
+    "dist/assets/bpmn-font/css/bpmn.css",
+    "dist/assets/bpmn-font/font/bpmn.eot",
+    "dist/assets/bpmn-font/font/bpmn.svg",
+    "dist/assets/bpmn-font/font/bpmn.ttf",
+    "dist/assets/bpmn-font/font/bpmn.woff",
+    "dist/assets/bpmn-font/font/bpmn.woff2"
+  ]
+}

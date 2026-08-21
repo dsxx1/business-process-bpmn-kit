@@ -1,0 +1,41 @@
+{
+  "schema": "business-process-bpmn-package/v1",
+  "process_id": "VYDACH",
+  "title": "Выдач",
+  "variant": "as-is",
+  "version": "0.1.0",
+  "status": "draft",
+  "canonicality": {
+    "syntax_status": "pending",
+    "profile_status": "pending",
+    "business_status": "pending_human_decision"
+  },
+  "bpmn": {
+    "file": "process.bpmn",
+    "definitions_id": "Definitions_Vydach",
+    "process_element_id": "Process_Vydach",
+    "collaboration_id": "Collaboration_Vydach",
+    "standard": "BPMN 2.0.2",
+    "is_executable": false
+  },
+  "engine": null,
+  "source_card": {
+    "ref": "../process-card.md",
+    "sha256": "435a0e0b05bae3faba70bed264613770e43403a913e473279c7a5099b7cb2e28"
+  },
+  "evidence": [
+    {
+      "evidence_id": "EV-VYDACH-01",
+      "ref": "../evidence/README.md",
+      "sha256": "c6488a1f7a9c91f554c1f16d83b19e27441e37361592d4b7264e868f7b3f184c",
+      "role": "Шаблон описания оснований процесса"
+    }
+  ],
+  "process_links": [],
+  "review": {
+    "owner_role": null,
+    "human_decision": "not_recorded",
+    "questions_file": "questions.json",
+    "decisions_file": "decisions.json"
+  }
+}

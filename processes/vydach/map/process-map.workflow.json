@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Выдач · Автоматический черновик карты",
+    "subtitle": "Карта автоматически построена из BPMN и ожидает проверки человеком",
+    "animation": "none",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1900,
+      428
+    ],
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "lanes": [
+    {
+      "id": "main_route",
+      "label": "Основной маршрут процесса"
+    },
+    {
+      "id": "branch_route_01",
+      "label": "Дополнительный маршрут 1"
+    }
+  ],
+  "mainPath": [
+    "map_StartEvent_RequestReceived",
+    "map_Task_ClarifyInput",
+    "map_Gateway_CanPerform",
+    "map_Task_PerformWork",
+    "map_EndEvent_ResultDelivered"
+  ],
+  "nodes": [
+    {
+      "id": "map_StartEvent_RequestReceived",
+      "lane": "main_route",
+      "col": 0,
+      "type": "external",
+      "label": "Получен запрос",
+      "width": 160,
+      "height": 68
+    },
+    {
+      "id": "map_Task_ClarifyInput",
+      "lane": "main_route",
+      "col": 1,
+      "type": "frontend",
+      "label": "Уточнить входные…",
+      "width": 160,
+      "height": 68
+    },
+    {
+      "id": "map_Gateway_CanPerform",
+      "lane": "main_route",
+      "col": 2,
+      "type": "security",
+      "label": "Работу можно…",
+      "width": 160,
+      "height": 68
+    },
+    {
+      "id": "map_Task_PerformWork",
+      "lane": "main_route",
+      "col": 3,
+      "type": "frontend",
+      "label": "Выполнить работу и…",
+      "width": 160,
+      "height": 68
+    },
+    {
+      "id": "map_EndEvent_NotPerformed",
+      "lane": "branch_route_01",
+      "col": 3,
+      "type": "external",
+      "label": "Работа завершена…",
+      "width": 160,
+      "height": 68
+    },
+    {
+      "id": "map_EndEvent_ResultDelivered",
+      "lane": "main_route",
+      "col": 4,
+      "type": "external",
+      "label": "Результат передан",
+      "width": 160,
+      "height": 68
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_01",
+      "from": "map_Task_ClarifyInput",
+      "to": "map_Gateway_CanPerform",
+      "label": "Перейти: Работу можно…",
+      "role": "main",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight"
+    },
+    {
+      "id": "edge_02",
+      "from": "map_StartEvent_RequestReceived",
+      "to": "map_Task_ClarifyInput",
+      "label": "Перейти: Уточнить входные…",
+      "role": "main",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight"
+    },
+    {
+      "id": "edge_03",
+      "from": "map_Task_PerformWork",
+      "to": "map_EndEvent_ResultDelivered",
+      "label": "Перейти: Результат передан",
+      "role": "main",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight"
+    },
+    {
+      "id": "edge_04",
+      "from": "map_Gateway_CanPerform",
+      "to": "map_Task_PerformWork",
+      "label": "Да: Выполнить работу и…",
+      "role": "main",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight"
+    },
+    {
+      "id": "edge_05",
+      "from": "map_Gateway_CanPerform",
+      "to": "map_EndEvent_NotPerformed",
+      "label": "Нет: Работа завершена…",
+      "role": "branch",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Статус карты",
+      "items": [
+        "Это автоматический черновик по структуре BPMN, а не утверждённая бизнес-карта",
+        "Каждый BPMN-узел верхнего уровня и каждый переход показаны отдельно; проверьте роли и формулировки",
+        "После проверки отредактируйте исходник карты и повторите сборку"
+      ]
+    }
+  ]
+}

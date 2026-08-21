@@ -3,7 +3,10 @@ import { dirname, relative, resolve, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import process from 'node:process';
 
-import { assertRegistryEntryMatchesPackage } from './registry-package-contract.mjs';
+import {
+  assertRegistryEntryMatchesPackage,
+  assertUnregisteredPackageIsDraft
+} from './registry-package-contract.mjs';
 
 const projectRoot = resolve(import.meta.dirname, '..', '..');
 const registryPath = resolve(projectRoot, 'registry', 'processes.json');
@@ -44,7 +47,6 @@ const registeredMeta = new Set(registry.processes.map((entry) => entry.meta_ref)
 const discoveredMeta = findProcessMetadata(processesRoot).map(portablePath);
 const discoveredMetaSet = new Set(discoveredMeta);
 const unregistered = discoveredMeta.filter((path) => !registeredMeta.has(path));
-if (unregistered.length) fail(`Найдены незарегистрированные пакеты процессов: ${unregistered.join(', ')}`);
 const undiscovered = [ ...registeredMeta ].filter((path) => !discoveredMetaSet.has(path));
 if (undiscovered.length) fail(`Реестр ссылается на пакеты вне processes: ${undiscovered.join(', ')}`);
 
@@ -59,9 +61,20 @@ for (const entry of registry.processes) {
   runNode(bpmnlintPath, [ '--config', lintConfigPath, bpmnPath ], `BPMN lint ${entry.process_id}`);
 }
 
+for (const metaRef of unregistered) {
+  const metaPath = resolve(projectRoot, metaRef);
+  const packageRoot = dirname(metaPath);
+  runNode(validatorPath, [ packageRoot ], `Проверка незарегистрированного черновика ${metaRef}`);
+  const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
+  assertUnregisteredPackageIsDraft({ metaPath: metaRef, meta });
+  const bpmnPath = resolve(packageRoot, meta.bpmn.file);
+  runNode(bpmnlintPath, [ '--config', lintConfigPath, bpmnPath ], `BPMN lint ${meta.process_id}`);
+}
+
 console.log(JSON.stringify({
   status: 'passed',
   registered_processes: registry.processes.length,
   discovered_process_packages: discoveredMeta.length,
+  unregistered_draft_processes: unregistered.length,
   process_ids: registry.processes.map((entry) => entry.process_id)
 }, null, 2));

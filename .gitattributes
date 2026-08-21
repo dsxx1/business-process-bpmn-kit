@@ -2,10 +2,24 @@
 .gitattributes text eol=lf
 *.md text eol=lf
 *.json text eol=lf
+*.yml text eol=lf
 *.mjs text eol=lf
 *.bpmn text eol=lf
 *.svg text eol=lf
 *.html text eol=lf
+*.sha256 text eol=lf
+vendor/archify/LICENSE text eol=lf
+vendor/bpmn-js/LICENSE text eol=lf
+vendor/bpmn-js/*.js text eol=lf
+vendor/bpmn-js/*.json text eol=lf
+vendor/bpmn-js/*.md text eol=lf
+vendor/bpmn-js/*.sha256 text eol=lf
+vendor/bpmn-js/**/*.css text eol=lf
+vendor/bpmn-js/**/*.svg text eol=lf
+vendor/bpmn-js/**/*.eot binary
+vendor/bpmn-js/**/*.ttf binary
+vendor/bpmn-js/**/*.woff binary
+vendor/bpmn-js/**/*.woff2 binary
 *.cmd text eol=crlf
 *.png binary
 *.jpg binary

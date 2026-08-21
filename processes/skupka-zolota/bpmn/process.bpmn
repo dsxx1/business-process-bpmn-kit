@@ -2,14 +2,17 @@
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_GoldBuying" targetNamespace="https://sks.local/business-processes/gold-buying/v1" exporter="Business Process BPMN Kit" exporterVersion="1.0.0">
   <bpmn:message id="Message_ClientRequest" name="Обращение клиента о продаже золота или лома" />
   <bpmn:message id="Message_FinMonitoringNotice" name="Уведомление об отказе предъявить документ, удостоверяющий личность" />
+  <bpmn:message id="Message_MarkingProcessHandoff" name="Изделие требует подготовки к маркировке" />
   <bpmn:message id="Message_ProcessHandoff" name="Изделие и учётные данные готовы к следующему процессу" />
   <bpmn:collaboration id="Collaboration_GoldBuying" name="Скупка золота и драгоценных металлов">
     <bpmn:participant id="Participant_Client" name="Клиент" />
     <bpmn:participant id="Participant_BuyingOrganization" name="Организация · клиентская скупка" processRef="Process_GoldBuying" />
     <bpmn:participant id="Participant_FinMonitoring" name="Финансовый мониторинг · связанный контур" />
+    <bpmn:participant id="Participant_MarkingProcess" name="Подготовка товара к маркировке · процесс-кандидат" />
     <bpmn:participant id="Participant_NextProcess" name="Следующий внутренний процесс · цель требует утверждения" />
     <bpmn:messageFlow id="MessageFlow_ClientRequest" name="Хочет безвозвратно продать изделие" sourceRef="Participant_Client" targetRef="StartEvent_ClientRequest" messageRef="Message_ClientRequest" />
     <bpmn:messageFlow id="MessageFlow_FinMonitoring" name="Незамедлительное уведомление" sourceRef="SendTask_NotifyFinMonitoring" targetRef="Participant_FinMonitoring" messageRef="Message_FinMonitoringNotice" />
+    <bpmn:messageFlow id="MessageFlow_MarkingProcess" name="Передача изделия для подготовки к маркировке" sourceRef="EndEvent_MarkingProcessHandoff" targetRef="Participant_MarkingProcess" messageRef="Message_MarkingProcessHandoff" />
     <bpmn:messageFlow id="MessageFlow_NextProcess" name="Передача изделия и учётных данных" sourceRef="EndEvent_Success" targetRef="Participant_NextProcess" messageRef="Message_ProcessHandoff" />
   </bpmn:collaboration>
   <bpmn:process id="Process_GoldBuying" name="Скупка золота и драгоценных металлов · текущая модель · ожидает утверждения" isExecutable="false">
@@ -69,7 +72,7 @@
       <bpmn:outgoing>Flow_GoldBuyingConfirmedToItemInspection</bpmn:outgoing>
       <bpmn:outgoing>Flow_OtherRequestToAlternateProcess</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:endEvent id="EndEvent_OtherProcess" name="Передано в другой процесс или консультацию">
+    <bpmn:endEvent id="EndEvent_OtherProcess" name="Запрос не относится к скупке · нужен другой маршрут">
       <bpmn:incoming>Flow_OtherRequestToAlternateProcess</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:userTask id="Task_InspectItem" name="Проверить изделие">
@@ -102,6 +105,7 @@
     </bpmn:exclusiveGateway>
     <bpmn:endEvent id="EndEvent_MarkingProcessHandoff" name="Передано в процесс маркировки по внутренним правилам">
       <bpmn:incoming>Flow_MarkingCodeInvalidToMarkingProcess</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_MarkingProcess" messageRef="Message_MarkingProcessHandoff" />
     </bpmn:endEvent>
     <bpmn:exclusiveGateway id="Gateway_MarkingChecksComplete">
       <bpmn:incoming>Flow_MarkingCheckNotRequiredToMarkingMerge</bpmn:incoming>
@@ -151,7 +155,7 @@
       <bpmn:outgoing>Flow_HighEvaluationNotRequiredToTermsMerge</bpmn:outgoing>
       <bpmn:outgoing>Flow_HighEvaluationRequiredToApprovalProcess</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:callActivity id="CallActivity_HighEvaluation" name="Согласовать повышенную оценку" calledElement="HIGH-EVALUATION-APPROVAL">
+    <bpmn:callActivity id="CallActivity_HighEvaluation" name="Согласовать повышенную оценку" calledElement="SOGLASOVANIE-POVYSHENNOI-OTSENKI-V-SKUPKE">
       <bpmn:documentation>Связанный процесс-кандидат. Точная матрица полномочий, канал и срок согласования требуют решения владельца процесса.</bpmn:documentation>
       <bpmn:incoming>Flow_HighEvaluationRequiredToApprovalProcess</bpmn:incoming>
       <bpmn:outgoing>Flow_ApprovalProcessCompletedToDecision</bpmn:outgoing>
@@ -273,30 +277,6 @@
       <bpmndi:BPMNShape id="BPMNShape_Participant_BuyingOrganization" bpmnElement="Participant_BuyingOrganization" isHorizontal="true">
         <dc:Bounds x="40" y="140" width="1920" height="800" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_Participant_FinMonitoring" bpmnElement="Participant_FinMonitoring" isHorizontal="true">
-        <dc:Bounds x="600" y="980" width="400" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_Participant_NextProcess" bpmnElement="Participant_NextProcess" isHorizontal="true">
-        <dc:Bounds x="1640" y="20" width="320" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="BPMNEdge_MessageFlow_ClientRequest" bpmnElement="MessageFlow_ClientRequest">
-        <di:waypoint x="200" y="100" />
-        <di:waypoint x="200" y="175" />
-        <di:waypoint x="138" y="175" />
-        <di:waypoint x="138" y="250" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_MessageFlow_FinMonitoring" bpmnElement="MessageFlow_FinMonitoring">
-        <di:waypoint x="400" y="715" />
-        <di:waypoint x="400" y="847.5" />
-        <di:waypoint x="800" y="847.5" />
-        <di:waypoint x="800" y="980" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_MessageFlow_NextProcess" bpmnElement="MessageFlow_NextProcess">
-        <di:waypoint x="1808" y="522" />
-        <di:waypoint x="1808" y="311" />
-        <di:waypoint x="1800" y="311" />
-        <di:waypoint x="1800" y="100" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="BPMNShape_Lane_ProductSpecialist" bpmnElement="Lane_ProductSpecialist" isHorizontal="true">
         <dc:Bounds x="70" y="140" width="1890" height="800" />
       </bpmndi:BPMNShape>
@@ -423,6 +403,12 @@
         <di:waypoint x="390" y="268" />
         <di:waypoint x="430" y="268" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_OtherRequestToAlternateProcess" bpmnElement="Flow_OtherRequestToAlternateProcess">
+        <di:waypoint x="365" y="293" />
+        <di:waypoint x="365" y="336.5" />
+        <di:waypoint x="365" y="336.5" />
+        <di:waypoint x="365" y="380" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_ItemInspectionToAcceptanceDecision" bpmnElement="Flow_ItemInspectionToAcceptanceDecision">
         <di:waypoint x="530" y="268" />
         <di:waypoint x="570" y="268" />
@@ -431,9 +417,19 @@
         <di:waypoint x="620" y="268" />
         <di:waypoint x="660" y="268" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ItemRejectedToRejectionEnd" bpmnElement="Flow_ItemRejectedToRejectionEnd">
+        <di:waypoint x="595" y="293" />
+        <di:waypoint x="595" y="336.5" />
+        <di:waypoint x="595" y="336.5" />
+        <di:waypoint x="595" y="380" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCheckRequiredToCodeCheck" bpmnElement="Flow_MarkingCheckRequiredToCodeCheck">
         <di:waypoint x="710" y="268" />
         <di:waypoint x="750" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCheckNotRequiredToMarkingMerge" bpmnElement="Flow_MarkingCheckNotRequiredToMarkingMerge">
+        <di:waypoint x="710" y="268" />
+        <di:waypoint x="980" y="268" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCodeCheckedToValidationDecision" bpmnElement="Flow_MarkingCodeCheckedToValidationDecision">
         <di:waypoint x="850" y="268" />
@@ -446,6 +442,12 @@
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingChecksCompleteToPreliminaryPrice" bpmnElement="Flow_MarkingChecksCompleteToPreliminaryPrice">
         <di:waypoint x="1030" y="268" />
         <di:waypoint x="1060" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCodeInvalidToMarkingProcess" bpmnElement="Flow_MarkingCodeInvalidToMarkingProcess">
+        <di:waypoint x="915" y="293" />
+        <di:waypoint x="915" y="336.5" />
+        <di:waypoint x="915" y="336.5" />
+        <di:waypoint x="915" y="380" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_PreliminaryPriceToClientIdentification" bpmnElement="Flow_PreliminaryPriceToClientIdentification">
         <di:waypoint x="1110" y="308" />
@@ -461,6 +463,28 @@
         <di:waypoint x="310" y="540" />
         <di:waypoint x="350" y="540" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_IdentificationIncompleteToDocumentRefusalDecision" bpmnElement="Flow_IdentificationIncompleteToDocumentRefusalDecision">
+        <di:waypoint x="285" y="565" />
+        <di:waypoint x="285" y="607.5" />
+        <di:waypoint x="292" y="607.5" />
+        <di:waypoint x="292" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_IdentityDocumentRefusedToFinancialMonitoring" bpmnElement="Flow_IdentityDocumentRefusedToFinancialMonitoring">
+        <di:waypoint x="317" y="675" />
+        <di:waypoint x="350" y="675" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_OtherIdentificationFailureToRejectionMerge" bpmnElement="Flow_OtherIdentificationFailureToRejectionMerge">
+        <di:waypoint x="317" y="675" />
+        <di:waypoint x="490" y="675" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_FinancialMonitoringNotifiedToRejectionMerge" bpmnElement="Flow_FinancialMonitoringNotifiedToRejectionMerge">
+        <di:waypoint x="450" y="675" />
+        <di:waypoint x="490" y="675" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_RejectionMergeToIdentificationRejected" bpmnElement="Flow_RejectionMergeToIdentificationRejected">
+        <di:waypoint x="540" y="675" />
+        <di:waypoint x="577" y="675" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_TermsAgreementToHighEvaluationDecision" bpmnElement="Flow_TermsAgreementToHighEvaluationDecision">
         <di:waypoint x="450" y="540" />
         <di:waypoint x="490" y="540" />
@@ -469,6 +493,30 @@
         <di:waypoint x="540" y="540" />
         <di:waypoint x="860" y="540" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_HighEvaluationRequiredToApprovalProcess" bpmnElement="Flow_HighEvaluationRequiredToApprovalProcess">
+        <di:waypoint x="540" y="540" />
+        <di:waypoint x="580" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ApprovalProcessCompletedToDecision" bpmnElement="Flow_ApprovalProcessCompletedToDecision">
+        <di:waypoint x="680" y="540" />
+        <di:waypoint x="720" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_HighEvaluationApprovedToTermsMerge" bpmnElement="Flow_HighEvaluationApprovedToTermsMerge">
+        <di:waypoint x="770" y="540" />
+        <di:waypoint x="860" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_HighEvaluationRejectedToStandardPriceOffer" bpmnElement="Flow_HighEvaluationRejectedToStandardPriceOffer">
+        <di:waypoint x="745" y="565" />
+        <di:waypoint x="745" y="600" />
+        <di:waypoint x="860" y="600" />
+        <di:waypoint x="860" y="635" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_StandardPriceOfferToTermsMerge" bpmnElement="Flow_StandardPriceOfferToTermsMerge">
+        <di:waypoint x="860" y="635" />
+        <di:waypoint x="860" y="600" />
+        <di:waypoint x="885" y="600" />
+        <di:waypoint x="885" y="565" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_TermsMergeToClientAcceptanceDecision" bpmnElement="Flow_TermsMergeToClientAcceptanceDecision">
         <di:waypoint x="910" y="540" />
         <di:waypoint x="950" y="540" />
@@ -476,6 +524,12 @@
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_TermsAcceptedToDocumentPreparation" bpmnElement="Flow_TermsAcceptedToDocumentPreparation">
         <di:waypoint x="1000" y="540" />
         <di:waypoint x="1040" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_TermsRejectedToNoDeal" bpmnElement="Flow_TermsRejectedToNoDeal">
+        <di:waypoint x="975" y="565" />
+        <di:waypoint x="975" y="607.5" />
+        <di:waypoint x="975" y="607.5" />
+        <di:waypoint x="975" y="650" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_DocumentsPreparedToVerification" bpmnElement="Flow_DocumentsPreparedToVerification">
         <di:waypoint x="1140" y="540" />
@@ -493,6 +547,16 @@
         <di:waypoint x="1510" y="540" />
         <di:waypoint x="1550" y="540" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_PostedErrorToCorrectionProcess" bpmnElement="Flow_PostedErrorToCorrectionProcess">
+        <di:waypoint x="1485" y="565" />
+        <di:waypoint x="1485" y="607.5" />
+        <di:waypoint x="1500" y="607.5" />
+        <di:waypoint x="1500" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow_CorrectionProcessToErrorRoutedEnd" bpmnElement="Flow_CorrectionProcessToErrorRoutedEnd">
+        <di:waypoint x="1550" y="690" />
+        <di:waypoint x="1597" y="690" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_SecureHandoffToFinalConfirmationDecision" bpmnElement="Flow_SecureHandoffToFinalConfirmationDecision">
         <di:waypoint x="1650" y="540" />
         <di:waypoint x="1690" y="540" />
@@ -501,95 +565,47 @@
         <di:waypoint x="1740" y="540" />
         <di:waypoint x="1790" y="540" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_IdentityDocumentRefusedToFinancialMonitoring" bpmnElement="Flow_IdentityDocumentRefusedToFinancialMonitoring">
-        <di:waypoint x="317" y="675" />
-        <di:waypoint x="350" y="675" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_FinancialMonitoringNotifiedToRejectionMerge" bpmnElement="Flow_FinancialMonitoringNotifiedToRejectionMerge">
-        <di:waypoint x="450" y="675" />
-        <di:waypoint x="490" y="675" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_RejectionMergeToIdentificationRejected" bpmnElement="Flow_RejectionMergeToIdentificationRejected">
-        <di:waypoint x="540" y="675" />
-        <di:waypoint x="577" y="675" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_HighEvaluationApprovedToTermsMerge" bpmnElement="Flow_HighEvaluationApprovedToTermsMerge">
-        <di:waypoint x="770" y="540" />
-        <di:waypoint x="860" y="540" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_OtherRequestToAlternateProcess" bpmnElement="Flow_OtherRequestToAlternateProcess">
-        <di:waypoint x="365" y="293" />
-        <di:waypoint x="365" y="336.5" />
-        <di:waypoint x="365" y="336.5" />
-        <di:waypoint x="365" y="380" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ItemRejectedToRejectionEnd" bpmnElement="Flow_ItemRejectedToRejectionEnd">
-        <di:waypoint x="595" y="293" />
-        <di:waypoint x="595" y="336.5" />
-        <di:waypoint x="595" y="336.5" />
-        <di:waypoint x="595" y="380" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCodeInvalidToMarkingProcess" bpmnElement="Flow_MarkingCodeInvalidToMarkingProcess">
-        <di:waypoint x="915" y="293" />
-        <di:waypoint x="915" y="336.5" />
-        <di:waypoint x="915" y="336.5" />
-        <di:waypoint x="915" y="380" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_IdentificationIncompleteToDocumentRefusalDecision" bpmnElement="Flow_IdentificationIncompleteToDocumentRefusalDecision">
-        <di:waypoint x="285" y="565" />
-        <di:waypoint x="285" y="607.5" />
-        <di:waypoint x="292" y="607.5" />
-        <di:waypoint x="292" y="650" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_HighEvaluationRequiredToApprovalProcess" bpmnElement="Flow_HighEvaluationRequiredToApprovalProcess">
-        <di:waypoint x="540" y="540" />
-        <di:waypoint x="580" y="540" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_HighEvaluationRejectedToStandardPriceOffer" bpmnElement="Flow_HighEvaluationRejectedToStandardPriceOffer">
-        <di:waypoint x="745" y="565" />
-        <di:waypoint x="745" y="600" />
-        <di:waypoint x="860" y="600" />
-        <di:waypoint x="860" y="635" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_TermsRejectedToNoDeal" bpmnElement="Flow_TermsRejectedToNoDeal">
-        <di:waypoint x="975" y="565" />
-        <di:waypoint x="975" y="607.5" />
-        <di:waypoint x="975" y="607.5" />
-        <di:waypoint x="975" y="650" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_PostedErrorToCorrectionProcess" bpmnElement="Flow_PostedErrorToCorrectionProcess">
-        <di:waypoint x="1485" y="565" />
-        <di:waypoint x="1485" y="607.5" />
-        <di:waypoint x="1500" y="607.5" />
-        <di:waypoint x="1500" y="650" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_Flow_FinalConfirmationsIncompleteToIncompleteEnd" bpmnElement="Flow_FinalConfirmationsIncompleteToIncompleteEnd">
         <di:waypoint x="1715" y="565" />
         <di:waypoint x="1715" y="607.5" />
         <di:waypoint x="1715" y="607.5" />
         <di:waypoint x="1715" y="650" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_MarkingCheckNotRequiredToMarkingMerge" bpmnElement="Flow_MarkingCheckNotRequiredToMarkingMerge">
-        <di:waypoint x="710" y="268" />
-        <di:waypoint x="980" y="268" />
+      <bpmndi:BPMNShape id="BPMNShape_Participant_FinMonitoring" bpmnElement="Participant_FinMonitoring" isHorizontal="true">
+        <dc:Bounds x="600" y="980" width="400" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Participant_MarkingProcess" bpmnElement="Participant_MarkingProcess" isHorizontal="true">
+        <dc:Bounds x="760" y="20" width="320" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_Participant_NextProcess" bpmnElement="Participant_NextProcess" isHorizontal="true">
+        <dc:Bounds x="1640" y="20" width="320" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_MessageFlow_ClientRequest" bpmnElement="MessageFlow_ClientRequest">
+        <di:waypoint x="200" y="100" />
+        <di:waypoint x="200" y="175" />
+        <di:waypoint x="138" y="175" />
+        <di:waypoint x="138" y="250" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_OtherIdentificationFailureToRejectionMerge" bpmnElement="Flow_OtherIdentificationFailureToRejectionMerge">
-        <di:waypoint x="317" y="675" />
-        <di:waypoint x="490" y="675" />
+      <bpmndi:BPMNEdge id="BPMNEdge_MessageFlow_FinMonitoring" bpmnElement="MessageFlow_FinMonitoring">
+        <di:waypoint x="400" y="715" />
+        <di:waypoint x="400" y="847.5" />
+        <di:waypoint x="800" y="847.5" />
+        <di:waypoint x="800" y="980" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_ApprovalProcessCompletedToDecision" bpmnElement="Flow_ApprovalProcessCompletedToDecision">
-        <di:waypoint x="680" y="540" />
-        <di:waypoint x="720" y="540" />
+      <bpmndi:BPMNEdge id="BPMNEdge_MessageFlow_MarkingProcess" bpmnElement="MessageFlow_MarkingProcess">
+        <di:waypoint x="933" y="398" />
+        <di:waypoint x="1185" y="398" />
+        <di:waypoint x="1185" y="120" />
+        <di:waypoint x="1000" y="100" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1195" y="180" width="150" height="58" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_StandardPriceOfferToTermsMerge" bpmnElement="Flow_StandardPriceOfferToTermsMerge">
-        <di:waypoint x="860" y="635" />
-        <di:waypoint x="860" y="600" />
-        <di:waypoint x="885" y="600" />
-        <di:waypoint x="885" y="565" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_Flow_CorrectionProcessToErrorRoutedEnd" bpmnElement="Flow_CorrectionProcessToErrorRoutedEnd">
-        <di:waypoint x="1550" y="690" />
-        <di:waypoint x="1597" y="690" />
+      <bpmndi:BPMNEdge id="BPMNEdge_MessageFlow_NextProcess" bpmnElement="MessageFlow_NextProcess">
+        <di:waypoint x="1808" y="522" />
+        <di:waypoint x="1808" y="311" />
+        <di:waypoint x="1800" y="311" />
+        <di:waypoint x="1800" y="100" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

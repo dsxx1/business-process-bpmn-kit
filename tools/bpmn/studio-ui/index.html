@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Студия бизнес-процессов</title>
+  <link rel="stylesheet" href="/vendor/diagram-js.css">
+  <link rel="stylesheet" href="/vendor/bpmn-js.css">
+  <link rel="stylesheet" href="/vendor/bpmn-js/assets/bpmn-font/css/bpmn.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Перейти к рабочей области</a>
+
+  <div class="app-shell" id="app-shell">
+    <aside class="sidebar" aria-label="Каталог бизнес-процессов">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" role="img">
+            <circle cx="8" cy="8" r="4"></circle>
+            <rect x="17" y="4" width="11" height="8" rx="2"></rect>
+            <rect x="4" y="20" width="11" height="8" rx="2"></rect>
+            <circle cx="24" cy="24" r="4"></circle>
+            <path d="M12 8h5M8 12v8M15 24h5M24 12v8"></path>
+          </svg>
+        </span>
+        <span>
+          <strong>Студия процессов</strong>
+          <small>Понятно людям. Готово для BPMN.</small>
+        </span>
+      </div>
+
+      <div class="sidebar-heading">
+        <div>
+          <p class="eyebrow">Дополнительно</p>
+          <h1>Процессы проекта</h1>
+        </div>
+        <button class="icon-button" id="refresh-button" type="button" title="Обновить список" aria-label="Обновить список процессов">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7"></path></svg>
+        </button>
+      </div>
+
+      <label class="search-box">
+        <span class="visually-hidden">Найти процесс</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+        <input id="process-search" type="search" placeholder="Найти процесс" autocomplete="off">
+      </label>
+
+      <nav class="process-nav" aria-label="Список процессов">
+        <ul id="process-list" class="process-list"></ul>
+        <div id="process-list-empty" class="list-empty" hidden>
+          <span aria-hidden="true">⌕</span>
+          <p>Ничего не найдено</p>
+        </div>
+      </nav>
+
+      <button class="primary-button create-button" id="create-button" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        Добавить процесс в проект
+      </button>
+
+      <button class="help-card" id="help-button" type="button" aria-expanded="false" aria-controls="help-panel">
+        <span class="help-icon" aria-hidden="true">?</span>
+        <span><strong>Первый раз в BPMN?</strong><small>Откройте подсказку на 2 минуты</small></span>
+        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+      </button>
+    </aside>
+
+    <main id="workspace" class="workspace" tabindex="-1">
+      <header class="workspace-header">
+        <div class="process-heading">
+          <div class="title-row">
+            <h2 id="process-title">Редактор BPMN</h2>
+            <span id="process-status" class="status-badge status-neutral" hidden></span>
+          </div>
+          <p id="process-subtitle">Создайте схему одним кликом или откройте любой BPMN-файл.</p>
+        </div>
+
+        <div class="header-actions" id="header-actions">
+          <span id="save-state" class="save-state" role="status" aria-live="polite">
+            <span class="save-dot"></span>
+            Все изменения сохранены
+          </span>
+          <button class="secondary-button file-action" id="new-file-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+            Новая схема
+          </button>
+          <button class="secondary-button file-action" id="open-file-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7l2 2h9v11H3z"></path></svg>
+            Открыть BPMN
+          </button>
+          <input class="visually-hidden" id="open-file-input" type="file" accept=".bpmn,application/xml,text/xml">
+          <button class="primary-button" id="save-button" type="button" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5zM8 4v6h8V4M8 20v-6h8v6"></path></svg>
+            Сохранить
+          </button>
+          <button class="secondary-button file-action" id="save-as-button" type="button" disabled>
+            Сохранить как…
+          </button>
+          <button class="secondary-button file-action" id="check-button" type="button" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+            Проверить
+          </button>
+          <button class="secondary-button more-button" id="more-button" type="button" aria-haspopup="menu" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg>
+            Дополнительно
+          </button>
+          <div class="action-menu" id="action-menu" role="menu" hidden>
+            <button id="advanced-toggle-button" type="button" role="menuitem" aria-pressed="false">Показать процессы проекта</button>
+            <button id="download-button" type="button" role="menuitem">Скачать копию BPMN</button>
+            <button id="reload-button" type="button" role="menuitem">Отменить несохранённые изменения</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="workspace-body">
+        <nav class="tabs" aria-label="Представления процесса">
+          <button class="tab active" type="button" role="tab" aria-selected="true" aria-controls="diagram-view" id="diagram-tab" data-tab="diagram-view">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="3"></circle><rect x="15" y="8" width="6" height="8" rx="1"></rect><path d="M8 12h7"></path></svg>
+            BPMN-схема
+          </button>
+          <button class="tab managed-tab advanced-only" type="button" role="tab" aria-selected="false" aria-controls="map-view" id="map-tab" data-tab="map-view">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"></path></svg>
+            Карта для человека
+          </button>
+          <button class="tab managed-tab advanced-only" type="button" role="tab" aria-selected="false" aria-controls="details-view" id="details-tab" data-tab="details-view">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v4H7zM5 5H3v16h18V5h-2M8 12h8M8 16h6"></path></svg>
+            Карточка и вопросы
+            <span id="questions-count" class="tab-count" hidden></span>
+          </button>
+        </nav>
+
+        <div class="view-stack">
+          <section id="welcome-view" class="welcome-view" aria-labelledby="welcome-title">
+            <div class="welcome-art" aria-hidden="true">
+              <div class="flow-card flow-start"><span></span>Начало</div>
+              <div class="flow-line"></div>
+              <div class="flow-card flow-task">Понятное действие</div>
+              <div class="flow-line"></div>
+              <div class="flow-card flow-end"><span></span>Результат</div>
+            </div>
+            <p class="eyebrow">Графический BPMN-редактор</p>
+            <h3 id="welcome-title">Нарисуйте процесс без настройки проекта и командной строки</h3>
+            <p>Новая схема уже содержит понятный рабочий пример. Файл можно назвать как угодно и сохранить в любую папку.</p>
+            <div class="welcome-actions">
+              <button class="primary-button" id="welcome-create-button" type="button">Новая схема</button>
+              <button class="secondary-button" id="welcome-open-button" type="button">Открыть BPMN-файл</button>
+            </div>
+            <p class="drop-hint">Можно просто перетащить сюда файл <strong>.bpmn</strong></p>
+          </section>
+
+          <section id="diagram-view" class="tab-view diagram-view" role="tabpanel" aria-labelledby="diagram-tab" hidden>
+            <div class="editor-guide" id="editor-guide">
+              <div class="guide-copy">
+                <span class="guide-number">1</span>
+                <span><strong>Добавьте шаг</strong><small>Выберите фигуру слева и поставьте её на схему</small></span>
+              </div>
+              <span class="guide-separator" aria-hidden="true"></span>
+              <div class="guide-copy">
+                <span class="guide-number">2</span>
+                <span><strong>Назовите по-русски</strong><small>Дважды щёлкните по подписи</small></span>
+              </div>
+              <span class="guide-separator" aria-hidden="true"></span>
+              <div class="guide-copy">
+                <span class="guide-number">3</span>
+                <span><strong>Соедините стрелкой</strong><small>Нажмите элемент и выберите соединение</small></span>
+              </div>
+              <button class="guide-close" id="guide-close" type="button" aria-label="Скрыть подсказку">×</button>
+            </div>
+
+            <div class="canvas-shell">
+              <div id="bpmn-canvas" class="bpmn-canvas" aria-label="Редактор BPMN-схемы"></div>
+              <div id="canvas-loading" class="canvas-loading" hidden>
+                <span class="spinner" aria-hidden="true"></span>
+                <span>Открываем схему…</span>
+              </div>
+              <div class="canvas-tools" aria-label="Масштаб схемы">
+                <button id="zoom-out" type="button" title="Уменьшить" aria-label="Уменьшить масштаб">−</button>
+                <button id="zoom-reset" type="button" title="Показать всю схему" aria-label="Показать всю схему">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg>
+                </button>
+                <button id="zoom-in" type="button" title="Увеличить" aria-label="Увеличить масштаб">+</button>
+              </div>
+              <div id="selection-hint" class="selection-hint" aria-live="polite" hidden></div>
+
+              <aside id="transition-panel" class="transition-panel" role="dialog" aria-modal="false" aria-labelledby="transition-panel-title" hidden>
+                <div class="transition-panel-header">
+                  <div>
+                    <p class="eyebrow">Переход между процессами</p>
+                    <h3 id="transition-panel-title">Связать с другим процессом</h3>
+                  </div>
+                  <button class="icon-button" id="transition-panel-close" type="button" aria-label="Закрыть настройку связи">×</button>
+                </div>
+                <p id="transition-source-name" class="transition-source-name">Выбран вызов другого процесса</p>
+                <div id="transition-loading" class="transition-loading" role="status" hidden>
+                  <span class="spinner" aria-hidden="true"></span>
+                  <span>Загружаем доступные процессы…</span>
+                </div>
+                <div id="transition-panel-error" class="transition-panel-error" role="alert" hidden></div>
+                <section id="transition-convert" class="transition-convert" aria-labelledby="transition-convert-title" hidden>
+                  <div class="transition-convert-icon" aria-hidden="true">↗</div>
+                  <div>
+                    <h4 id="transition-convert-title">Сначала обозначьте переход в другой процесс</h4>
+                    <p>Сейчас это обычный шаг. Студия заменит его стандартным BPMN-блоком вызова и сохранит прежнее название и стрелки.</p>
+                    <ol>
+                      <li>Преобразуйте выбранный шаг.</li>
+                      <li>Выберите готовый, будущий или пока неизвестный процесс.</li>
+                      <li>Сохраните — схема и связь обновятся вместе.</li>
+                    </ol>
+                    <button class="primary-button" id="convert-to-call-activity-button" type="button">Сделать этот шаг вызовом другого процесса</button>
+                  </div>
+                </section>
+                <form id="transition-form" class="transition-form">
+                  <fieldset class="transition-choices">
+                    <legend>Что известно о следующем процессе?</legend>
+                    <label class="transition-choice">
+                      <input type="radio" name="transition-kind" value="registered" checked>
+                      <span><strong>Процесс уже есть</strong><small>Выберите готовый процесс из общего каталога</small></span>
+                    </label>
+                    <label class="transition-choice">
+                      <input type="radio" name="transition-kind" value="reserved">
+                      <span><strong>Процесс появится позже</strong><small>Студия сохранит название и карточку-заготовку</small></span>
+                    </label>
+                    <label class="transition-choice">
+                      <input type="radio" name="transition-kind" value="unknown">
+                      <span><strong>Пока неизвестно</strong><small>Зафиксируем неопределённость, ничего не угадывая</small></span>
+                    </label>
+                  </fieldset>
+
+                  <div id="registered-target-fields" class="transition-fields">
+                    <label class="field-label" for="registered-target">Выберите следующий процесс</label>
+                    <select id="registered-target" class="select-field" name="registered-target"></select>
+                    <p id="registered-target-empty" class="field-hint" hidden>В зарегистрированном каталоге пока нет другого процесса.</p>
+                  </div>
+
+                  <div id="reserved-target-fields" class="transition-fields" hidden>
+                    <label class="field-label" for="reserved-target-title">Как будет называться будущий процесс?</label>
+                    <input class="text-field" id="reserved-target-title" name="reserved-target-title" type="text" minlength="1" maxlength="200" placeholder="Например: Передача товара на склад" autocomplete="off">
+                    <p class="field-hint">Название можно выбрать свободно. Сам BPMN-процесс можно добавить позже.</p>
+                  </div>
+
+                  <div id="unknown-target-note" class="transition-unknown-note" hidden>
+                    <span aria-hidden="true">?</span>
+                    <p>Связь останется открытым вопросом для владельца процесса. Студия не подставит случайный процесс.</p>
+                  </div>
+
+                  <div class="transition-label-field">
+                    <label class="field-label" for="transition-label">Как человек увидит этот переход?</label>
+                    <input class="text-field" id="transition-label" name="transition-label" type="text" minlength="5" maxlength="200" required placeholder="Например: Перейти к согласованию оценки" autocomplete="off">
+                    <p class="field-hint">Это название появится в карточке и на карте процесса.</p>
+                  </div>
+
+                  <div class="transition-form-actions">
+                    <button class="danger-link-button" id="delete-transition-button" type="button" hidden>Удалить связь</button>
+                    <button class="primary-button" id="save-transition-button" type="submit">Сохранить связь</button>
+                  </div>
+                </form>
+              </aside>
+            </div>
+
+            <footer class="editor-footer">
+              <p><span class="keyboard-key">Ctrl</span> + <span class="keyboard-key">S</span> — сохранить · <span class="keyboard-key">Ctrl</span> + <span class="keyboard-key">Z</span> — отменить</p>
+              <p class="standard-note"><span aria-hidden="true">◉</span> Файл остаётся стандартным BPMN 2.0</p>
+            </footer>
+          </section>
+
+          <section id="map-view" class="tab-view map-view" role="tabpanel" aria-labelledby="map-tab" hidden>
+            <div class="map-toolbar">
+              <div>
+                <p class="eyebrow">Короткий маршрут процесса</p>
+                <h3>Карта для обсуждения с людьми</h3>
+                <p>Archify собирает крупные этапы, переходы и связи с другими процессами в отдельную читаемую карту.</p>
+              </div>
+              <div class="map-actions">
+                <button class="secondary-button" id="rebuild-map-button" type="button">Перестроить карту</button>
+                <button class="primary-button" id="open-map-button" type="button">Открыть отдельно</button>
+              </div>
+            </div>
+            <div id="map-frame-shell" class="map-frame-shell">
+              <div id="map-empty" class="map-empty" aria-live="polite">
+                <div class="map-empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 48 48"><rect x="3" y="18" width="13" height="12" rx="3"></rect><rect x="32" y="18" width="13" height="12" rx="3"></rect><path d="M16 24h16M24 24V9M19 14l5-5 5 5"></path></svg>
+                </div>
+                <h3 id="map-empty-title">Карта ещё не построена</h3>
+                <p id="map-empty-copy">Студия возьмёт текущую BPMN-схему и подготовит обзор. Для сложного процесса результат останется черновиком до проверки аналитиком.</p>
+                <button class="primary-button" id="build-map-button" type="button">Построить карту Archify</button>
+              </div>
+              <iframe id="map-frame" title="Карта процесса Archify" hidden></iframe>
+            </div>
+          </section>
+
+          <section id="details-view" class="tab-view details-view" role="tabpanel" aria-labelledby="details-tab" hidden>
+            <div class="details-grid">
+              <article class="summary-card summary-main">
+                <p class="eyebrow">Состояние процесса</p>
+                <div class="readiness-heading">
+                  <h3 id="details-status-title">Черновик</h3>
+                  <span id="readiness-percent">0%</span>
+                </div>
+                <div class="progress-track" aria-label="Готовность описания"><span id="readiness-bar"></span></div>
+                <p id="details-status-copy">Откройте процесс, чтобы увидеть готовность.</p>
+                <div class="details-primary-action">
+                  <button class="primary-button" id="lifecycle-action-button" type="button">Зарегистрировать процесс</button>
+                  <small id="lifecycle-action-note">Сначала студия выполнит техническую проверку.</small>
+                </div>
+              </article>
+
+              <article class="summary-card">
+                <div class="card-heading">
+                  <div>
+                    <p class="eyebrow">Что требует внимания</p>
+                    <h3>Проверка и вопросы</h3>
+                  </div>
+                  <span id="attention-count" class="attention-count">0</span>
+                </div>
+                <ul id="attention-list" class="attention-list"></ul>
+                <div id="attention-empty" class="attention-empty">
+                  <span aria-hidden="true">✓</span>
+                  <p>Явных проблем не найдено. Перед утверждением всё равно нужен владелец процесса.</p>
+                </div>
+              </article>
+
+              <article id="check-report" class="summary-card check-report-card" aria-live="polite" hidden>
+                <div class="card-heading check-report-heading">
+                  <div>
+                    <p class="eyebrow">Последняя техническая проверка</p>
+                    <h3 id="check-report-title">Результат проверки</h3>
+                  </div>
+                  <span id="check-report-status" class="check-report-status">Не запускалась</span>
+                </div>
+                <p id="check-first-error" class="check-first-error" hidden></p>
+                <div id="check-results" class="check-results"></div>
+              </article>
+
+              <article class="summary-card transitions-card">
+                <div class="card-heading">
+                  <div>
+                    <p class="eyebrow">Связи между процессами</p>
+                    <h3>Куда процесс передаёт работу</h3>
+                  </div>
+                  <span id="transitions-count" class="connections-count">0</span>
+                </div>
+                <p class="connections-intro">Выберите на BPMN-схеме обычный шаг или блок вызова — студия подскажет, как связать его с другим процессом.</p>
+                <div id="transitions-list" class="transitions-list"></div>
+                <div id="transitions-empty" class="connections-empty">
+                  <span aria-hidden="true">↗</span>
+                  <p>Связей пока нет. Если работа продолжается в другом процессе, выберите нужный шаг на схеме и следуйте подсказке.</p>
+                </div>
+              </article>
+
+              <article class="summary-card supporting-card process-card-document" aria-labelledby="process-card-heading">
+                <div class="card-heading">
+                  <div>
+                    <p class="eyebrow">Карточка процесса</p>
+                    <h3 id="process-card-heading">Описание для человека</h3>
+                  </div>
+                  <span class="supporting-format">Markdown</span>
+                </div>
+                <div id="process-card-content" class="process-card-content"></div>
+                <div id="process-card-missing" class="supporting-empty" role="status" hidden>
+                  <span aria-hidden="true">i</span>
+                  <div>
+                    <strong>Карточка процесса пока не создана</strong>
+                    <p>Добавьте файл <code>process-card.md</code> в папку процесса. Здесь появится понятное описание цели, границ, участников и маршрута.</p>
+                  </div>
+                </div>
+                <p class="supporting-edit-note">Это безопасный просмотр без исполнения HTML. Чтобы изменить описание, отредактируйте <code>process-card.md</code> и снова откройте процесс.</p>
+              </article>
+
+              <article class="summary-card supporting-card questions-card" aria-labelledby="questions-heading">
+                <div class="card-heading">
+                  <div>
+                    <p class="eyebrow">Вопросы владельцу</p>
+                    <h3 id="questions-heading">Что нужно уточнить</h3>
+                  </div>
+                  <span id="questions-summary-count" class="questions-summary-count">Нет данных</span>
+                </div>
+                <div id="questions-list" class="questions-list"></div>
+                <div id="questions-empty" class="supporting-empty" role="status" hidden>
+                  <span aria-hidden="true">✓</span>
+                  <div>
+                    <strong>Вопросов пока нет</strong>
+                    <p>Если при согласовании появятся неопределённости, добавьте их в список вопросов процесса.</p>
+                  </div>
+                </div>
+                <div id="questions-missing" class="supporting-empty" role="status" hidden>
+                  <span aria-hidden="true">i</span>
+                  <div>
+                    <strong>Список вопросов не найден</strong>
+                    <p>Добавьте файл <code>bpmn/questions.json</code>, чтобы владелец и аналитик видели, какие решения ещё не приняты.</p>
+                  </div>
+                </div>
+                <p class="supporting-edit-note">Вопросы редактируются в <code>bpmn/questions.json</code>. Решение владельца фиксируется отдельно через <code>npm run decision:owner</code> в <code>tools/bpmn</code>.</p>
+              </article>
+
+              <article class="summary-card facts-card">
+                <p class="eyebrow">Техническая сводка</p>
+                <h3>Паспорт BPMN-модели</h3>
+                <dl id="process-facts">
+                  <div><dt>Цель</dt><dd>Не заполнено</dd></div>
+                  <div><dt>Результат</dt><dd>Не заполнено</dd></div>
+                  <div><dt>Владелец</dt><dd>Не указан</dd></div>
+                  <div><dt>Следующий процесс</dt><dd>Не определён</dd></div>
+                </dl>
+              </article>
+
+              <article class="summary-card explain-card">
+                <p class="eyebrow">Что будет дальше</p>
+                <h3>Путь до рабочего процесса</h3>
+                <ol class="journey-list">
+                  <li class="done"><span>1</span><div><strong>Описать процесс</strong><small>Шаги, роли и понятные названия</small></div></li>
+                  <li id="journey-check"><span>2</span><div><strong>Проверить схему</strong><small>Стандарт BPMN и комплект документов</small></div></li>
+                  <li id="journey-owner"><span>3</span><div><strong>Получить решение владельца</strong><small>Техническая проверка не заменяет это решение</small></div></li>
+                  <li id="journey-engine"><span>4</span><div><strong>Передать разработчику</strong><small>Нейтральный BPMN-файл и отдельный адаптер движка</small></div></li>
+                </ol>
+              </article>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <aside id="help-panel" class="help-panel" aria-labelledby="help-title" hidden>
+    <div class="help-panel-header">
+      <div><p class="eyebrow">Быстрый старт</p><h2 id="help-title">BPMN за 2 минуты</h2></div>
+      <button class="icon-button" id="help-close" type="button" aria-label="Закрыть подсказку">×</button>
+    </div>
+    <div class="help-steps">
+      <article><span class="legend-symbol start-symbol" aria-hidden="true"></span><div><strong>Круг — событие</strong><p>Тонкий круг начинает процесс, толстый завершает.</p></div></article>
+      <article><span class="legend-symbol task-symbol" aria-hidden="true"></span><div><strong>Прямоугольник — действие</strong><p>Пишите глагол и результат: «Проверить документ».</p></div></article>
+      <article><span class="legend-symbol gateway-symbol" aria-hidden="true"></span><div><strong>Ромб — развилка</strong><p>Задайте вопрос, а на стрелках подпишите ответы.</p></div></article>
+      <article><span class="legend-symbol pool-symbol" aria-hidden="true"></span><div><strong>Дорожки — роли</strong><p>Так видно, кто отвечает за каждый шаг.</p></div></article>
+    </div>
+    <div class="help-rule"><strong>Главное правило</strong><p>Человек должен понимать схему без расшифровки кодов. Технические идентификаторы студия хранит внутри файла.</p></div>
+  </aside>
+  <div id="drawer-backdrop" class="drawer-backdrop" hidden></div>
+
+  <dialog id="create-dialog" class="dialog">
+    <form id="create-form" method="dialog">
+      <button class="dialog-close" type="button" data-close-dialog aria-label="Закрыть">×</button>
+      <div class="dialog-icon" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M16 6v20M6 16h20"></path></svg>
+      </div>
+      <p class="eyebrow">Новый бизнес-процесс</p>
+      <h2>Как называется процесс?</h2>
+       <p class="dialog-copy">Это добавит управляемый комплект в проект. Для обычного BPMN-файла используйте кнопку «Новая схема».</p>
+       <label class="field-label" for="process-name">Название</label>
+       <input class="text-field" id="process-name" name="title" type="text" minlength="1" maxlength="140" required placeholder="Например: Выдача заказа клиенту" autocomplete="off">
+       <p class="field-hint">Название можно выбрать свободно; шаги на схеме лучше подписывать понятными фразами.</p>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" data-close-dialog>Отмена</button>
+        <button class="primary-button" id="create-submit" type="submit">Создать основу</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="file-drop-overlay" class="file-drop-overlay" hidden>
+    <div><strong>Открыть BPMN-файл</strong><span>Отпустите файл, чтобы показать его в редакторе</span></div>
+  </div>
+
+  <dialog id="confirm-dialog" class="dialog confirm-dialog">
+    <form method="dialog" id="confirm-form">
+      <button class="dialog-close" type="button" data-close-dialog aria-label="Закрыть">×</button>
+      <div class="dialog-icon warning-icon" aria-hidden="true">!</div>
+      <p class="eyebrow">Подтвердите действие</p>
+      <h2 id="confirm-title">Продолжить?</h2>
+      <p class="dialog-copy" id="confirm-copy"></p>
+      <div class="notice-box"><span aria-hidden="true">i</span><p id="confirm-note">Это действие не означает бизнес-утверждение владельцем.</p></div>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" data-close-dialog>Отмена</button>
+        <button class="primary-button" id="confirm-submit" type="submit">Продолжить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="future-process-dialog" class="dialog future-process-dialog">
+    <form method="dialog">
+      <button class="dialog-close" type="button" data-close-dialog aria-label="Закрыть">×</button>
+      <p class="eyebrow">Будущий бизнес-процесс</p>
+      <h2 id="future-process-title">Карточка будущего процесса</h2>
+      <p class="dialog-copy">Это сохранённая заготовка. Она не считается готовой BPMN-схемой, пока процесс не создан и не проверен.</p>
+      <pre id="future-process-card" class="future-process-card-text"></pre>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" data-close-dialog>Закрыть</button>
+        <button class="primary-button" id="future-process-create-button" type="button">Создать этот процесс</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="/vendor/bpmn-modeler.js"></script>
+  <script src="/app.js" defer></script>
+</body>
+</html>

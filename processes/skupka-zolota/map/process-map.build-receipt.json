@@ -1,0 +1,83 @@
+{
+  "schema": "archify-map-build-receipt/v1",
+  "tool": {
+    "name": "Archify",
+    "version": "2.14.0+local-humanize",
+    "upstream_version": "2.14.0",
+    "upstream_revision": "7769cf5b2b9500ea7edfae6acbe3ea16c9bf93ef",
+    "build_profile": "local-humanize",
+    "license": "MIT",
+    "runtime_ref": "vendor/archify",
+    "package_sha256": "832badcf59a7e1c25ff171dd5807258ebe831ca27ca041286224640f60f438a9",
+    "manifest_sha256": "d7183055a017d97055fbaaf03bf5366ada179f5efeae4daf2854aef8dd9c8a0b",
+    "vendored_files": 21
+  },
+  "process": {
+    "slug": "skupka-zolota",
+    "process_id": "GOLD-BUYING",
+    "title": "Скупка золота и драгоценных металлов"
+  },
+  "source": {
+    "mode": "curated",
+    "automatic_draft": false,
+    "bpmn": {
+      "ref": "processes/skupka-zolota/bpmn/process.bpmn",
+      "sha256": "1ac39918c53adcf9e6143377f836fb20e2111ff3221ee3cb690bba0a183c4af6",
+      "bytes": 49971
+    },
+    "metadata": {
+      "ref": "processes/skupka-zolota/bpmn/process.meta.json",
+      "sha256": "6982e336aae8afe2d025b2de8e0f1059a00dd080fdff4692bfdd9f00987557af",
+      "bytes": 5289
+    },
+    "workflow": {
+      "ref": "processes/skupka-zolota/map/process-map.workflow.json",
+      "sha256": "88315dd982b3ae5cee9df304b7fc5b957d4f1cc5bd1806afaa51f37dc8a21934",
+      "bytes": 10339
+    },
+    "bindings": {
+      "ref": "processes/skupka-zolota/map/process-map.bindings.json",
+      "sha256": "1eec7dca2c7951652815c44c6e8462e11025f4f32bbb659728115e38b8cb2f50",
+      "bytes": 2498
+    }
+  },
+  "validation": {
+    "quality_profile": "showcase",
+    "checks_passed": 9,
+    "checks_total": 9,
+    "composition_status": "pass",
+    "errors": 0,
+    "warnings": 0,
+    "validate_checks_passed": 9,
+    "validate_checks_total": 9,
+    "map_to_bpmn": {
+      "status": "passed",
+      "map_nodes": 11,
+      "bound_bpmn_elements": 33,
+      "process_links": 7,
+      "validator_ref": "tools/bpmn/validate-map-bindings.mjs",
+      "validator_sha256": "43d339d125670ee2615b687d74ba4f4befb390b68a0c1490caf90d330109c79c"
+    }
+  },
+  "presentation": {
+    "locale": "ru",
+    "localizer_ref": "tools/bpmn/localize-map-ru.mjs",
+    "localizer_sha256": "e0a5842053c143b4db2eeec00bff147fc532072f3e140486c675bafa2431c531",
+    "validator_ref": "tools/bpmn/validate-map-ui.mjs",
+    "validator_sha256": "d327fe7f87b61d32c926b1ffa499b27e49a68705a4e4977d5a3108d4ac1659ba",
+    "raw_archify_artifact_sha256": "ed177b1a40ce0d5022f40ceb18714a319fff9b695e4157cf050634b768d36676",
+    "map_ui_validation": "passed"
+  },
+  "artifact": {
+    "ref": "processes/skupka-zolota/map/process-map.html",
+    "sha256": "6e37d9d8e67d6d45a00aeb0de5be99505416dcdcd36e0b64e93d1a72cc393356",
+    "bytes": 664008
+  },
+  "guarantees": {
+    "canonical_bpmn_unchanged": true,
+    "staged_before_commit": true,
+    "rollback_on_commit_error": true,
+    "guarded_inputs_rechecked_before_backup_cleanup": true,
+    "visual_review": "not_run"
+  }
+}

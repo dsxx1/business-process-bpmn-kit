@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Vydach" targetNamespace="https://example.local/business-processes/vydach/v1" exporter="Business Process BPMN Kit" exporterVersion="1.0.0">
+  <bpmn:collaboration id="Collaboration_Vydach" name="Выдач">
+    <bpmn:participant id="Participant_Organization" name="Организация" processRef="Process_Vydach" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Vydach" name="Выдач · рабочая модель" isExecutable="false">
+    <bpmn:documentation textFormat="text/markdown">Нейтральная BPMN 2.0.2 модель. Замените шаблонные названия, роли, шаги и исходы на смысловые.</bpmn:documentation>
+    <bpmn:laneSet id="LaneSet_Vydach">
+      <bpmn:lane id="Lane_Executor" name="Ответственный исполнитель">
+        <bpmn:flowNodeRef>StartEvent_RequestReceived</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ClarifyInput</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_CanPerform</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PerformWork</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ResultDelivered</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_NotPerformed</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_RequestReceived" name="Получен запрос">
+      <bpmn:outgoing>Flow_StartToClarify</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_ClarifyInput" name="Уточнить входные данные">
+      <bpmn:incoming>Flow_StartToClarify</bpmn:incoming>
+      <bpmn:outgoing>Flow_ClarifyToGateway</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_CanPerform" name="Работу можно выполнить?">
+      <bpmn:incoming>Flow_ClarifyToGateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_CanPerform</bpmn:outgoing>
+      <bpmn:outgoing>Flow_CannotPerform</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_PerformWork" name="Выполнить работу и проверить результат">
+      <bpmn:incoming>Flow_CanPerform</bpmn:incoming>
+      <bpmn:outgoing>Flow_WorkToSuccess</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_ResultDelivered" name="Результат передан">
+      <bpmn:incoming>Flow_WorkToSuccess</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_NotPerformed" name="Работа завершена без результата">
+      <bpmn:incoming>Flow_CannotPerform</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_StartToClarify" sourceRef="StartEvent_RequestReceived" targetRef="Task_ClarifyInput" />
+    <bpmn:sequenceFlow id="Flow_ClarifyToGateway" sourceRef="Task_ClarifyInput" targetRef="Gateway_CanPerform" />
+    <bpmn:sequenceFlow id="Flow_CanPerform" name="Да" sourceRef="Gateway_CanPerform" targetRef="Task_PerformWork" />
+    <bpmn:sequenceFlow id="Flow_CannotPerform" name="Нет" sourceRef="Gateway_CanPerform" targetRef="EndEvent_NotPerformed" />
+    <bpmn:sequenceFlow id="Flow_WorkToSuccess" sourceRef="Task_PerformWork" targetRef="EndEvent_ResultDelivered" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Vydach">
+    <bpmndi:BPMNPlane id="BPMNPlane_Vydach" bpmnElement="Collaboration_Vydach">
+      <bpmndi:BPMNShape id="Shape_Participant" bpmnElement="Participant_Organization" isHorizontal="true">
+        <dc:Bounds x="40" y="40" width="860" height="240" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane" bpmnElement="Lane_Executor" isHorizontal="true">
+        <dc:Bounds x="70" y="40" width="830" height="240" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Start" bpmnElement="StartEvent_RequestReceived">
+        <dc:Bounds x="120" y="130" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="94" y="171" width="88" height="20" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Clarify" bpmnElement="Task_ClarifyInput">
+        <dc:Bounds x="210" y="108" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway" bpmnElement="Gateway_CanPerform" isMarkerVisible="true">
+        <dc:Bounds x="390" y="123" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="362" y="178" width="106" height="28" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Perform" bpmnElement="Task_PerformWork">
+        <dc:Bounds x="510" y="108" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Success" bpmnElement="EndEvent_ResultDelivered">
+        <dc:Bounds x="740" y="130" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="706" y="171" width="104" height="20" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_NotPerformed" bpmnElement="EndEvent_NotPerformed">
+        <dc:Bounds x="397" y="220" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="344" y="258" width="142" height="42" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_StartToClarify" bpmnElement="Flow_StartToClarify">
+        <di:waypoint x="156" y="148" />
+        <di:waypoint x="210" y="148" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_ClarifyToGateway" bpmnElement="Flow_ClarifyToGateway">
+        <di:waypoint x="330" y="148" />
+        <di:waypoint x="390" y="148" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_CanPerform" bpmnElement="Flow_CanPerform">
+        <di:waypoint x="440" y="148" />
+        <di:waypoint x="510" y="148" />
+        <bpmndi:BPMNLabel><dc:Bounds x="467" y="127" width="18" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_CannotPerform" bpmnElement="Flow_CannotPerform">
+        <di:waypoint x="415" y="173" />
+        <di:waypoint x="415" y="220" />
+        <bpmndi:BPMNLabel><dc:Bounds x="422" y="189" width="24" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_WorkToSuccess" bpmnElement="Flow_WorkToSuccess">
+        <di:waypoint x="660" y="148" />
+        <di:waypoint x="740" y="148" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

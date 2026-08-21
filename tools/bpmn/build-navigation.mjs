@@ -3,15 +3,42 @@ import { dirname, relative, resolve } from 'node:path';
 import process from 'node:process';
 
 import { buildRegistryIndex, resolveProcessTarget } from './process-link-resolver.mjs';
+import { humanProcessStatus } from './process-status-labels.mjs';
 
+function parseArguments(argv) {
+  const options = { packageRoot: undefined, svgPath: undefined, outputPath: undefined, registryPath: undefined };
+  for (let index = 0; index < argv.length; index += 1) {
+    const argument = argv[index];
+    if (!argument.startsWith('--') && options.packageRoot === undefined) {
+      options.packageRoot = argument;
+      continue;
+    }
+    if (argument === '--svg' || argument === '--output' || argument === '--registry') {
+      if (index + 1 >= argv.length || argv[index + 1].startsWith('--')) {
+        throw new Error(`После ${argument} нужно указать путь.`);
+      }
+      const field = argument === '--svg' ? 'svgPath' : argument === '--output' ? 'outputPath' : 'registryPath';
+      if (options[field] !== undefined) throw new Error(`Параметр ${argument} указан больше одного раза.`);
+      options[field] = argv[index + 1];
+      index += 1;
+      continue;
+    }
+    throw new Error(`Неизвестный параметр: ${argument}`);
+  }
+  return options;
+}
+
+const options = parseArguments(process.argv.slice(2));
 const toolRoot = resolve(import.meta.dirname, '..', '..');
-const packageRoot = resolve(process.argv[2] || '../../processes/skupka-zolota/bpmn');
+const packageRoot = resolve(options.packageRoot || '../../processes/skupka-zolota/bpmn');
 const derivedRoot = resolve(packageRoot, 'derived');
-const outputPath = resolve(derivedRoot, 'process-navigation.html');
+const svgPath = resolve(options.svgPath || resolve(derivedRoot, 'process.svg'));
+const outputPath = resolve(options.outputPath || resolve(derivedRoot, 'process-navigation.html'));
+const registryPath = resolve(options.registryPath || resolve(toolRoot, 'registry', 'processes.json'));
 const meta = JSON.parse(readFileSync(resolve(packageRoot, 'process.meta.json'), 'utf8'));
-const registry = JSON.parse(readFileSync(resolve(toolRoot, 'registry', 'processes.json'), 'utf8'));
+const registry = JSON.parse(readFileSync(registryPath, 'utf8'));
 const registryIndex = buildRegistryIndex(registry);
-let svg = readFileSync(resolve(derivedRoot, 'process.svg'), 'utf8')
+let svg = readFileSync(svgPath, 'utf8')
   .replace(/\r\n?/gu, '\n')
   .replace(/^<\?xml[^>]*>\s*/u, '');
 
@@ -31,6 +58,7 @@ const links = meta.process_links.map((link) => ({
 }));
 const embeddedLinks = JSON.stringify(links).replaceAll('<', '\\u003c');
 const title = meta.title.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+const processStatus = humanProcessStatus(meta).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
 const html = `<!doctype html>
 <html lang="ru">
@@ -72,7 +100,7 @@ const html = `<!doctype html>
   <main>
     <section id="diagram">${svg}</section>
     <aside>
-      <span class="status">Рабочая модель · ожидает бизнес-утверждения</span>
+      <span class="status">${processStatus}</span>
       <h2 id="panel-title">Связи с другими процессами</h2>
       <div id="panel" class="hint">Синим контуром отмечены шаги, которые вызывают другой процесс, передают ему работу или отправляют уведомление.</div>
       <details>

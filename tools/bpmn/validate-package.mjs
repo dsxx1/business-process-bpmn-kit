@@ -6,8 +6,14 @@ import process from 'node:process';
 import Ajv from 'ajv';
 import { BpmnModdle } from 'bpmn-moddle';
 
+import { callActivityTargetContractError } from './process-transition-contract.mjs';
+
 const args = process.argv.slice(2);
 const requireRegistry = args.includes('--require-registry');
+// Узкое послабление только для транзакции update-process.mjs: метаданные уже
+// изменены человеком, а запись реестра будет синхронизирована после проверки.
+// Обычная валидация и финальная проверка реестра по-прежнему требуют совпадения.
+const allowStaleRegistryStatus = args.includes('--allow-stale-registry-status');
 const packageArg = args.find((arg) => !arg.startsWith('--')) || '../../templates/process-package/bpmn';
 const toolRoot = resolve(import.meta.dirname, '..', '..');
 const packageRoot = resolve(packageArg);
@@ -16,6 +22,23 @@ const registryPath = resolve(toolRoot, 'registry', 'processes.json');
 
 function fail(message) {
   throw new Error(message);
+}
+
+const cyrillicTextPattern = /\p{Script=Cyrillic}/u;
+const opaqueReaderCodePattern = /(?:^|[^\p{L}\p{N}])(?:ОП|БП|СКС)[-\s]?\d+(?=$|[^\p{L}\p{N}])|\b(?:Activity|Event|Flow|Gateway|PROC|Task)_[A-Za-z0-9_-]+\b/iu;
+
+function assertRussianReaderText(value, label) {
+  const text = String(value ?? '').trim();
+  if (!text) fail(`${label}: отсутствует понятная человеку подпись`);
+  if (!cyrillicTextPattern.test(text)) fail(`${label}: подпись должна быть понятной русской фразой, а не английским текстом или техническим кодом`);
+  if (opaqueReaderCodePattern.test(text)) fail(`${label}: внутренний код нужно заменить полным русским смыслом`);
+}
+
+function assertProcessTitle(value, label) {
+  const title = String(value ?? '').trim();
+  if (!title) fail(`${label}: название не может быть пустым`);
+  if (title.length > 200) fail(`${label}: название не должно быть длиннее 200 символов`);
+  if (/[\u0000-\u001f\u007f\u2028\u2029]/u.test(title)) fail(`${label}: название должно быть записано в одну строку`);
 }
 
 function readJson(path) {
@@ -93,6 +116,14 @@ const meta = validateJson(ajv, 'process-package.schema.json', 'process.meta.json
 const questions = validateJson(ajv, 'questions.schema.json', 'questions.json');
 const decisions = validateJson(ajv, 'decisions.schema.json', 'decisions.json');
 
+assertProcessTitle(meta.title, 'Название процесса');
+for (const link of meta.process_links) {
+  assertRussianReaderText(link.label, `Связь ${link.link_id}`);
+  for (const target of link.candidate_targets) {
+    assertProcessTitle(target.title, `Название следующего процесса в связи ${link.link_id}`);
+  }
+}
+
 if (meta.process_id !== questions.process_id || meta.process_id !== decisions.process_id) {
   fail('process_id differs between package files');
 }
@@ -115,7 +146,7 @@ if (existsSync(registryPath)) {
 
 const registryEntry = registry.processes.find((entry) => entry.process_id === meta.process_id);
 if (requireRegistry && !registryEntry) fail(`Registry is missing ${meta.process_id}`);
-if (registryEntry && (registryEntry.status !== meta.status || registryEntry.business_status !== meta.canonicality.business_status)) {
+if (!allowStaleRegistryStatus && registryEntry && (registryEntry.status !== meta.status || registryEntry.business_status !== meta.canonicality.business_status)) {
   fail(`Registry status is stale for ${meta.process_id}`);
 }
 
@@ -125,6 +156,7 @@ meta.evidence.forEach(assertFileHash);
 const bpmnPath = resolve(packageRoot, meta.bpmn.file);
 if (!existsSync(bpmnPath)) fail(`Missing BPMN file: ${meta.bpmn.file}`);
 const xml = readFileSync(bpmnPath, 'utf8');
+const bpmnSha256 = sha256(bpmnPath);
 
 const namespacePrefixes = [ ...xml.matchAll(/xmlns:([A-Za-z0-9_-]+)=/g) ].map((match) => match[1]);
 const portablePrefixes = new Set([ 'xsi', 'bpmn', 'bpmndi', 'dc', 'di' ]);
@@ -150,9 +182,36 @@ if (!definitions.diagrams?.length || !definitions.diagrams[0].plane?.planeElemen
 
 const elements = allBpmnElements(definitions);
 const elementsById = new Map(elements.filter((element) => element.id).map((element) => [ element.id, element ]));
+const semanticIdPattern = /^[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z][A-Za-z0-9]*)+$/;
+const invalidSemanticIds = elements
+  .filter((element) => element.id && !semanticIdPattern.test(element.id))
+  .map((element) => element.id);
+if (invalidSemanticIds.length) {
+  fail(
+    `BPMN elements must have stable semantic ASCII ids; replace generated or numeric ids: ${invalidSemanticIds.join(', ')}`
+  );
+}
 const activities = elements.filter((element) => element.$instanceOf?.('bpmn:Activity'));
 for (const activity of activities) {
-  if (!activity.name?.trim()) fail(`Activity ${activity.id} has no human-readable name`);
+  assertRussianReaderText(activity.name, `Действие ${activity.id}`);
+}
+
+for (const element of elements.filter((item) =>
+  typeof item.name === 'string'
+  && item.name.trim()
+  && ![ 'bpmn:Process', 'bpmn:Collaboration' ].includes(item.$type)
+)) {
+  assertRussianReaderText(element.name, `Элемент ${element.id || element.$type}`);
+}
+
+for (const participant of collaboration.participants || []) {
+  assertRussianReaderText(participant.name, `Участник ${participant.id}`);
+}
+for (const lane of elements.filter((element) => element.$type === 'bpmn:Lane')) {
+  assertRussianReaderText(lane.name, `Дорожка ${lane.id}`);
+}
+for (const annotation of elements.filter((element) => element.$type === 'bpmn:TextAnnotation')) {
+  assertRussianReaderText(annotation.text, `Примечание ${annotation.id}`);
 }
 
 const sequenceFlows = elements.filter((element) => element.$type === 'bpmn:SequenceFlow');
@@ -168,9 +227,9 @@ for (const gateway of gateways) {
   const outgoingCount = (gateway.outgoing || []).length;
   if (incomingCount > 1 && outgoingCount > 1) fail(`Gateway ${gateway.id} must not join and fork at the same time`);
   if (outgoingCount > 1) {
-    if (!gateway.name?.trim()) fail(`Forking gateway ${gateway.id} has no question label`);
+    assertRussianReaderText(gateway.name, `Развилка ${gateway.id}`);
     for (const flow of gateway.outgoing || []) {
-      if (!flow.name?.trim()) fail(`Outgoing flow ${flow.id} from ${gateway.id} has no answer label`);
+      assertRussianReaderText(flow.name, `Ответ на развилке ${gateway.id}, переход ${flow.id}`);
     }
   } else if (incomingCount > 1 && outgoingCount !== 1) {
     fail(`Converging gateway ${gateway.id} must have one outgoing flow`);
@@ -181,6 +240,8 @@ const startEvents = elements.filter((element) => element.$type === 'bpmn:StartEv
 const endEvents = elements.filter((element) => element.$type === 'bpmn:EndEvent');
 if (startEvents.length !== 1) fail(`Expected exactly one start event, got ${startEvents.length}`);
 if (endEvents.length < 1) fail('At least one explicit end event is required');
+assertRussianReaderText(startEvents[0].name, `Начало ${startEvents[0].id}`);
+for (const endEvent of endEvents) assertRussianReaderText(endEvent.name, `Завершение ${endEvent.id}`);
 
 const reachable = new Set();
 const queue = [ startEvents[0] ];
@@ -200,14 +261,26 @@ for (const link of meta.process_links) {
   const sourceElement = elementsById.get(link.source_element_id);
   if (!sourceElement) fail(`Process link references missing BPMN element: ${link.source_element_id}`);
   if (sourceElement?.$type === 'bpmn:CallActivity') {
-    if (!sourceElement.calledElement?.trim()) fail(`Call activity ${sourceElement.id} has no calledElement`);
-    if (!link.target_process_id) fail(`Call activity ${sourceElement.id} process link has no target_process_id`);
-    if (sourceElement.calledElement !== link.target_process_id) {
-      fail(`Call activity ${sourceElement.id} calls ${sourceElement.calledElement}, but process link targets ${link.target_process_id}`);
-    }
+    const contractError = callActivityTargetContractError(sourceElement, link);
+    if (contractError) fail(contractError);
   }
   if (link.relation === 'call' && sourceElement?.$type !== 'bpmn:CallActivity') {
     fail(`Process link ${link.link_id} has relation=call, but ${link.source_element_id} is not a Call Activity`);
+  }
+  if (link.relation === 'handoff') {
+    if (sourceElement?.$type !== 'bpmn:EndEvent') {
+      fail(`Process link ${link.link_id} has relation=handoff, but ${link.source_element_id} is not a message End Event`);
+    }
+    const messageDefinition = sourceElement.eventDefinitions?.find((definition) => definition.$type === 'bpmn:MessageEventDefinition');
+    if (!messageDefinition?.messageRef?.id) {
+      fail(`Handoff ${link.link_id} must use a message End Event with messageRef`);
+    }
+    const matchingMessageFlow = collaboration.messageFlows?.some((flow) =>
+      flow.sourceRef?.id === sourceElement.id && flow.messageRef?.id === messageDefinition.messageRef.id
+    );
+    if (!matchingMessageFlow) {
+      fail(`Handoff ${link.link_id} must have a Message Flow from ${sourceElement.id}`);
+    }
   }
   const targets = [ ...(link.target_ref ? [ { target_ref: link.target_ref } ] : []), ...link.candidate_targets ];
   for (const target of targets) {
@@ -232,21 +305,58 @@ for (const question of questions.questions) {
   }
 }
 for (const decision of decisions.decisions) {
-  if (!questionIds.has(decision.question_id)) fail(`Decision references unknown question: ${decision.question_id}`);
+  if (decision.question_id !== null && !questionIds.has(decision.question_id)) {
+    fail(`Decision references unknown question: ${decision.question_id}`);
+  }
+}
+
+const currentEvidenceHashes = meta.evidence.map((evidence) => evidence.sha256);
+function currentDecision(outcome) {
+  return decisions.decisions.find((decision) =>
+    decision.outcome === outcome &&
+    decision.actor === meta.review.owner_role &&
+    decision.bpmn_sha256 === bpmnSha256 &&
+    decision.source_card_sha256 === meta.source_card.sha256 &&
+    decision.evidence_sha256.length === currentEvidenceHashes.length &&
+    decision.evidence_sha256.every((hash, index) => hash === currentEvidenceHashes[index])
+  );
 }
 
 if (meta.canonicality.business_status === 'canonical') {
-  if (meta.review.human_decision !== 'approved' || !decisions.decisions.some((decision) => decision.outcome === 'approve')) {
+  if (meta.status !== 'approved') {
+    fail('Canonical business status requires process status approved');
+  }
+  const openBlockingQuestions = questions.questions.filter((question) => question.blocking && question.status === 'open');
+  if (openBlockingQuestions.length) {
+    fail(`Canonical business status has open blocking questions: ${openBlockingQuestions.map((question) => question.question_id).join(', ')}`);
+  }
+  const currentApproval = currentDecision('approve');
+  if (meta.review.human_decision !== 'approved' || !currentApproval) {
     fail('Canonical business status requires an approved human decision');
   }
 }
 if (meta.canonicality.business_status === 'rejected') {
-  if (meta.review.human_decision !== 'rejected' || !decisions.decisions.some((decision) => decision.outcome === 'reject')) {
+  if (meta.status !== 'rejected') {
+    fail('Rejected business status requires process status rejected');
+  }
+  const currentRejection = currentDecision('reject');
+  if (meta.review.human_decision !== 'rejected' || !currentRejection) {
     fail('Rejected business status requires a recorded rejection');
   }
 }
 if (meta.canonicality.business_status === 'pending_human_decision' && meta.review.human_decision === 'approved') {
   fail('Pending business status conflicts with an approved human decision');
+}
+if (meta.canonicality.business_status === 'pending_human_decision' && meta.review.human_decision === 'rejected') {
+  fail('Pending business status conflicts with a rejected human decision');
+}
+if (meta.status === 'rework') {
+  if (meta.canonicality.business_status !== 'pending_human_decision' || meta.review.human_decision !== 'rework') {
+    fail('Rework process status requires a pending business status and a rework human decision');
+  }
+  if (!currentDecision('rework')) {
+    fail('Rework process status requires a recorded decision for the current process materials');
+  }
 }
 
 const serialized = await moddle.toXML(definitions, { format: true });
@@ -263,7 +373,7 @@ console.log(JSON.stringify({
   title: meta.title,
   variant: meta.variant,
   version: meta.version,
-  bpmn_sha256: sha256(bpmnPath),
+  bpmn_sha256: bpmnSha256,
   bpmn_elements: elementsById.size,
   activities: activities.length,
   gateways: gateways.length,

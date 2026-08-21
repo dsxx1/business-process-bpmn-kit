@@ -4,6 +4,8 @@ stages:
 bpmn_validation:
   stage: test
   image: node:22-bookworm-slim
+  variables:
+    BPMN_CHROME_PATH: /usr/bin/chromium
   cache:
     key:
       files:
@@ -12,6 +14,7 @@ bpmn_validation:
       - tools/bpmn/.npm/
   before_script:
     - cd tools/bpmn
+    - apt-get update && apt-get install -y --no-install-recommends chromium && rm -rf /var/lib/apt/lists/*
     - npm ci --cache .npm --prefer-offline
   script:
     - npm run verify:ci

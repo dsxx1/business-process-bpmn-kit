@@ -68,7 +68,7 @@ try {
     validMeta,
     (meta) => {
       const link = meta.process_links.find((item) => item.source_element_id === 'CallActivity_HighEvaluation');
-      link.target_status = 'unresolved';
+      link.target_status = 'candidate';
       link.target_process_id = null;
       link.target_ref = null;
     },
@@ -80,7 +80,7 @@ try {
       const link = meta.process_links.find((item) => item.source_element_id === 'CallActivity_HighEvaluation');
       link.target_process_id = 'WRONG-PROCESS';
     },
-    /calls HIGH-EVALUATION-APPROVAL, but process link targets WRONG-PROCESS/u
+    /calls SOGLASOVANIE-POVYSHENNOI-OTSENKI-V-SKUPKE, but process link targets WRONG-PROCESS/u
   );
 
   console.log(JSON.stringify({
