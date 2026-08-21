@@ -18,31 +18,32 @@ jobs:
     name: verify:ci
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    container:
-      image: node:22-bookworm-slim
     env:
-      BPMN_CHROME_PATH: /usr/bin/chromium
+      # Chrome предустановлен в образе раннера. Задание выполняется не от root,
+      # поэтому песочница браузера остаётся включённой и флаг --no-sandbox не нужен.
+      BPMN_CHROME_PATH: /usr/bin/google-chrome
     steps:
-      - name: Установить chromium и git
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends chromium git ca-certificates
-          rm -rf /var/lib/apt/lists/*
-
       - name: Получить исходники
         uses: actions/checkout@v4
 
-      - name: Восстановить кэш npm
-        uses: actions/cache@v4
+      - name: Подготовить Node.js
+        uses: actions/setup-node@v4
         with:
-          path: tools/bpmn/.npm
-          key: npm-${{ hashFiles('tools/bpmn/package-lock.json') }}
-          restore-keys: |
-            npm-
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tools/bpmn/package-lock.json
+
+      - name: Проверить браузер для отрисовки и браузерных тестов
+        run: |
+          test -x "$BPMN_CHROME_PATH" || {
+            echo "Браузер не найден: $BPMN_CHROME_PATH"
+            exit 1
+          }
+          "$BPMN_CHROME_PATH" --version
 
       - name: Установить зависимости
         working-directory: tools/bpmn
-        run: npm ci --cache .npm --prefer-offline
+        run: npm ci
 
       - name: Запустить проверку
         working-directory: tools/bpmn
