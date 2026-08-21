@@ -1,0 +1,49 @@
+name: Проверка BPMN-комплекта
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bpmn-validation:
+    name: verify:ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: node:22-bookworm-slim
+    env:
+      BPMN_CHROME_PATH: /usr/bin/chromium
+    steps:
+      - name: Установить chromium и git
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends chromium git ca-certificates
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Получить исходники
+        uses: actions/checkout@v4
+
+      - name: Восстановить кэш npm
+        uses: actions/cache@v4
+        with:
+          path: tools/bpmn/.npm
+          key: npm-${{ hashFiles('tools/bpmn/package-lock.json') }}
+          restore-keys: |
+            npm-
+
+      - name: Установить зависимости
+        working-directory: tools/bpmn
+        run: npm ci --cache .npm --prefer-offline
+
+      - name: Запустить проверку
+        working-directory: tools/bpmn
+        run: npm run verify:ci
