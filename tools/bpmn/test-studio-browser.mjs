@@ -71,6 +71,11 @@ window.__studioConsoleErrors = [];
 const selfTest = `<script>
 setTimeout(function () {
   var query = new URLSearchParams(window.location.search);
+  if (query.get('studio-diagram-preview') === '1') return;
+  if (query.get('studio-map-preview') === '1') {
+    document.getElementById('map-tab').click();
+    return;
+  }
   if (query.get('studio-transition-preview') === '1') {
     document.getElementById('details-tab').click();
     setTimeout(function () {
@@ -209,9 +214,25 @@ try {
     '--virtual-time-budget=6000',
     `--screenshot=${screenshotPath}`,
     `--user-data-dir=${resolve(tempRoot, `profile-visual-${process.pid}`)}`,
-    studio.url + '&studio-transition-preview=1&process=skupka-zolota'
+    studio.url + '&studio-self-test=1&studio-diagram-preview=1&process=skupka-zolota'
   ]);
   if (!existsSync(screenshotPath)) throw new Error('Браузер не создал контрольный снимок BPMN-студии.');
+  const archifyScreenshotPath = process.env.STUDIO_ARCHIFY_SCREENSHOT_PATH
+    ? resolve(process.env.STUDIO_ARCHIFY_SCREENSHOT_PATH)
+    : resolve(tempRoot, 'studio-archify.png');
+  mkdirSync(dirname(archifyScreenshotPath), { recursive: true });
+  await runBrowser(browser, [
+    '--headless=new',
+    '--disable-gpu',
+    '--disable-extensions',
+    '--hide-scrollbars',
+    '--window-size=1600,1000',
+    '--virtual-time-budget=9000',
+    `--screenshot=${archifyScreenshotPath}`,
+    `--user-data-dir=${resolve(tempRoot, `profile-archify-${process.pid}`)}`,
+    studio.url + '&studio-self-test=1&studio-map-preview=1&process=skupka-zolota'
+  ]);
+  if (!existsSync(archifyScreenshotPath)) throw new Error('Браузер не создал контрольный снимок Archify в Студии.');
   const detailsScreenshotPath = resolve(tempRoot, 'studio-details.png');
   await runBrowser(browser, [
     '--headless=new',
@@ -237,6 +258,7 @@ try {
     first_supporting_question_visible: true,
     bpmn_io_mark_visible: true,
     screenshot: screenshotPath,
+    archify_screenshot: archifyScreenshotPath,
     details_screenshot: detailsScreenshotPath
   }, null, 2));
 } finally {
