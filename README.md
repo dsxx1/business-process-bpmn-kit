@@ -1,7 +1,6 @@
 # Локальная BPMN-студия и комплект бизнес-процессов
 
 [![Проверка BPMN-комплекта](https://github.com/dsxx1/business-process-bpmn-kit/actions/workflows/verify.yml/badge.svg)](https://github.com/dsxx1/business-process-bpmn-kit/actions/workflows/verify.yml)
-[![Лицензия MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Это готовый автономный набор для описания бизнес-процессов. В одном проекте
 собраны графический BPMN-редактор, проверка схем, человекочитаемые карты
